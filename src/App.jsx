@@ -1,0 +1,84 @@
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { useState } from 'react'; 
+import { useStore } from './store'; 
+import { LayoutDashboard, FileText, Package, ClipboardList, LogOut, Loader2 } from 'lucide-react';
+
+import Dashboard from './pages/Dashboard';
+import InvoicePage from './pages/InvoicePage';
+import LogPage from './pages/LogPage';
+import InventoryPage from './pages/InventoryPage';
+import Login from './pages/Login';
+
+export default function App() {
+  const user = useStore((state) => state.user);
+  const logout = useStore((state) => state.logout); 
+  const [isExiting, setIsExiting] = useState(false); 
+
+  if(!user) {
+    return <Login />;
+  }
+  const handleLogout = () => {
+    setIsExiting(true);
+    
+    setTimeout(() => {
+      logout(); 
+    }, 800);
+  };
+
+  return (
+    <BrowserRouter>
+      <div className="flex h-screen bg-slate-50">
+        
+        <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col print:hidden">
+          <div className="flex-1">
+            <h1 className="text-xl font-bold mb-8 text-blue-400 uppercase tracking-tight">
+              IMS - Inventory
+            </h1>
+            
+            <nav className="space-y-2">
+              <Link to="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
+                <LayoutDashboard size={18} /> Dashboard
+              </Link>
+              <Link to="/invoices" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
+                <FileText size={18} /> Create Invoice
+              </Link>
+              <Link to="/inventory" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
+                <Package size={18} /> Inventory
+              </Link>
+              <Link to="/logs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
+                <ClipboardList size={18} /> Inventory Log
+              </Link>
+            </nav>
+          </div>
+
+          {/* THE LOGOUT BUTTON (At the bottom) */}
+          <button 
+            onClick={handleLogout}
+            disabled={isExiting}
+            className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl font-bold transition-all duration-500
+              ${isExiting 
+                ? 'bg-red-600 opacity-50 cursor-not-allowed scale-95' 
+                : 'bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white border border-slate-700 hover:border-red-500'}`}
+          >
+            {isExiting ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : (
+              <LogOut size={20} />
+            )}
+            <span>{isExiting ? 'Closing...' : 'Logout'}</span>
+          </button>
+        </aside>
+
+        {/* Content Area */}
+        <main className="flex-1 p-10 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/invoices" element={<InvoicePage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/logs" element={<LogPage />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  );
+}
