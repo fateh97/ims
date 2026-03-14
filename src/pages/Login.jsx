@@ -1,19 +1,37 @@
 import { useState } from 'react';
 import { useStore } from '../store';
-import {Lock, Mail, Eye, EyeOff, ShieldCheck} from 'lucide-react';
+import {Lock, Mail, Eye, EyeOff, ShieldCheck, Loader2} from 'lucide-react';
+import axios from 'axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const login = useStore(state => state.login);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    if (email === 'admin@test.com' && password === 'password123') {
-      login({ email, role: 'admin' });
-    } else {
-      alert('Invalid credentials. Use admin@test.com and password123');  
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/login', {
+        email: email,
+        password: password
+      });
+      
+      const { token, user } = response.data;
+
+      localStorage.setItem('auth_token', token);
+      login(user);
+    } catch (err) {
+      // Check if Laravel sent back a specific error message
+      const message = err.response?.data?.message || 'Invalid email or password';
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -30,6 +48,13 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Error Message Alert */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm font-bold rounded-xl animate-shake">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
             <div className="relative">
@@ -39,6 +64,7 @@ export default function Login() {
                 required
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="admin@test.com"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
@@ -53,6 +79,7 @@ export default function Login() {
                 required
                 className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="••••••••"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button 
@@ -67,16 +94,24 @@ export default function Login() {
 
           <button 
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-95"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
-            Sign In
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                <span>Authenticating...</span>
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
 
         <p className="text-center text-sm text-slate-400 mt-8">
           Protected by IMS Security Standards 2026
         </p>
-      </div>
+        </div>
     </div>
   );
 }

@@ -1,44 +1,70 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { FileText, ArrowUpRight, ArrowDownLeft, CheckCircle2, Printer } from 'lucide-react';
+import { FileText, ArrowUpRight, ArrowDownLeft, CheckCircle2, Printer, Loader2 } from 'lucide-react';
 
 export default function InvoicePage() {
-  const { inventory, addTransaction } = useStore();
-
+  const { inventory, fetchInventory,addTransaction } = useStore();
+  const [loading, setLoading] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [quantity, setQuantity] = useState("");
   const [type, setType] = useState("OUT"); 
   const [success, setSuccess] = useState(false);
-  
+  const [isProcessing, setIsProcessing] = useState(false);
   const [lastInvoice, setLastInvoice] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    const load = async () => {
+      if (inventory.length === 0) {
+        await fetchInventory();
+      }
+      setLoading(false);
+    };
+    load();
+  }, [fetchInventory, inventory.length]);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
     const product = inventory.find(p => p.id === Number(selectedProductId));
+    const qtyNum = Number(quantity);
+
+    // 1. Client-side Validation: Check if enough stock exists for "OUT"
+    if (type === "OUT" && product.stock < qtyNum) {
+      alert(`Insufficient stock! You only have ${product.stock} units available.`);
+      return;
+    }
+
+    setIsProcessing(true);
     const invRef = `INV-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    addTransaction(
+    // 2. Call the store (which calls Laravel)
+    const result = await addTransaction(
       Number(selectedProductId), 
-      Number(quantity), 
-      type, 
+      type,
+      qtyNum, 
       invRef
     );
 
-    setLastInvoice({
-      ref: invRef,
-      productName: product.name,
-      qty: quantity,
-      price: product.price,
-      total: product.price * quantity,
-      date: new Date().toLocaleString(),
-      type: type
-    });
+    if (result) {
+      setLastInvoice({
+        ref: invRef,
+        productName: product.name,
+        qty: qtyNum,
+        price: product.price,
+        total: product.price * qtyNum,
+        date: new Date().toLocaleString(),
+        type: type
+      });
 
-    setSuccess(true);
-    setQuantity("");
-    setSelectedProductId("");
-    setTimeout(() => setSuccess(false), 5000);
+      setSuccess(true);
+      setQuantity("");
+      setSelectedProductId("");
+      setTimeout(() => setSuccess(false), 5000);
+    } else {
+      alert("Transaction failed on the server. Please try again.");
+    }
+    
+    setIsProcessing(false);
   };
 
   const handlePrint = () => {
@@ -47,7 +73,6 @@ export default function InvoicePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
-      
       <div className="print:hidden space-y-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-blue-600 text-white rounded-lg">
@@ -60,7 +85,7 @@ export default function InvoicePage() {
           {success && (
             <div className="bg-emerald-50 text-emerald-700 p-4 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
               <CheckCircle2 size={20} />
-              <span className="font-bold">Transaction Successful! Stock and Logs updated.</span>
+              <span className="font-bold">Transaction Successful! Database Updated.</span>
             </div>
           )}
 
@@ -120,16 +145,19 @@ export default function InvoicePage() {
 
             <button
               type="submit"
-              className={`w-full py-4 rounded-2xl font-bold text-white transition-all shadow-lg active:scale-95 ${
-                type === "OUT" ? "bg-rose-600 hover:bg-rose-700 shadow-rose-100" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100"
-              }`}
+              disabled={isProcessing}
+              className={`w-full py-4 rounded-2xl font-bold text-white transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${
+                type === "OUT" ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"
+              } disabled:opacity-50`}
             >
-              Process {type === "OUT" ? "Customer Sale" : "Supplier Restock"}
+              {isProcessing ? <Loader2 className="animate-spin" size={20} /> : null}
+              {isProcessing ? "Processing..." : `Process ${type === "OUT" ? "Customer Sale" : "Supplier Restock"}`}
             </button>
           </form>
         </div>
       </div>
 
+      {/* RECEIPT PREVIEW SECTION (Keep your existing design) */}
       {lastInvoice && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex justify-between items-center print:hidden">

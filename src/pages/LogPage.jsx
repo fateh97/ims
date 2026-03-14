@@ -1,16 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Clock, ArrowUpRight, ArrowDownLeft, Printer, X, FileText } from 'lucide-react';
+import { Clock, ArrowUpRight, ArrowDownLeft, Printer, X, FileText, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function LogPage() {
-  const logs = useStore((state) => state.logs);
-  const inventory = useStore((state) => state.inventory);
-  
+  const [logs, setLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
+
+  // 1. Fetch logs from Laravel API on load
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await axios.get('http://127.0.0.1:8000/api/logs', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setLogs(response.data);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLogs();
+  }, []);
 
   const handlePrint = () => {
     window.print();
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center text-slate-400">
+        <Loader2 className="animate-spin mr-2" /> Loading transaction history...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -31,9 +57,14 @@ export default function LogPage() {
               {logs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm text-slate-500 flex items-center gap-2">
-                    <Clock size={14} /> {log.date}
+                    <Clock size={14} /> 
+                    {/* Laravel returns 'created_at'. We format it slightly for the UI */}
+                    {new Date(log.created_at).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-800">{log.productName}</td>
+                  <td className="px-6 py-4 font-medium text-slate-800">
+                    {/* Accessing the name through the Laravel relationship */}
+                    {log.product?.name || "Deleted Product"}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                       log.type === 'IN' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
@@ -53,12 +84,15 @@ export default function LogPage() {
               ))}
             </tbody>
           </table>
+          {logs.length === 0 && (
+            <div className="p-10 text-center text-slate-400">No transactions recorded yet.</div>
+          )}
         </div>
       </div>
 
+      {/* RECEIPT MODAL */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm print:bg-white print:p-0 print:static print:inset-auto">
-          
           <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden print:shadow-none print:rounded-none">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 print:hidden">
               <h3 className="font-bold text-slate-500 uppercase tracking-widest text-xs">Reprinting {selectedLog.ref}</h3>
@@ -80,7 +114,7 @@ export default function LogPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-slate-800 text-lg">Invoice: {selectedLog.ref}</p>
-                  <p className="text-slate-500 text-sm">{selectedLog.date}</p>
+                  <p className="text-slate-500 text-sm">{new Date(selectedLog.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -94,7 +128,7 @@ export default function LogPage() {
                 </thead>
                 <tbody>
                   <tr className="text-slate-800 font-semibold text-lg">
-                    <td className="py-8">{selectedLog.productName}</td>
+                    <td className="py-8">{selectedLog.product?.name || "N/A"}</td>
                     <td className="py-8">{selectedLog.qty} units</td>
                     <td className={`py-8 text-right font-black ${selectedLog.type === 'IN' ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {selectedLog.type === 'IN' ? `+${selectedLog.qty}` : `-${selectedLog.qty}`}

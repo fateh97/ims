@@ -1,34 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, Package, Plus, X, DollarSign, Tag, AlertTriangle } from 'lucide-react';
+import { Search, Package, Plus, X, DollarSign, Tag, AlertTriangle, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory, addProduct } = useStore();
+  const { inventory, addProduct, fetchInventory } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Form State
   const [newName, setNewName] = useState("");
   const [newSku, setNewSku] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newStock, setNewStock] = useState("");
 
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    const newProduct = {
-      id: Date.now(),
-      name: newName,
-      sku: newSku,
-      price: parseFloat(newPrice),
-      stock: parseInt(newStock)
+  // FETCH PRODUCTS FROM LARAVEL
+  useEffect(() => {
+    // 1. Define the logic INSIDE the function
+    const loadData = async () => {
+      try {
+        await fetchInventory();
+      } catch (error) {
+        console.error("Failed to load inventory:", error);
+      } finally {
+        setLoading(false); 
+      }
     };
-    addProduct(newProduct);
-    setIsOpen(false);
-    setNewName(""); setNewSku(""); setNewPrice(""); setNewStock("");
+
+    loadData();
+
+  }, []);
+
+  console.log("Current Inventory in State:", inventory);
+  // SAVE PRODUCT TO LARAVEL
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('auth_token');
+      const productData = {
+        name: newName,
+        sku: newSku,
+        price: parseFloat(newPrice),
+        stock: parseInt(newStock)
+      };
+
+      const response = await axios.post('http://127.0.0.1:8000/api/add-products', productData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      addProduct(response.data); // Update Zustand state with the saved product
+      setIsOpen(false);
+      setNewName(""); setNewSku(""); setNewPrice(""); setNewStock("");
+    } catch (error) {
+      alert("Error saving product. Check if SKU is unique.");
+    }
   };
 
   const filteredProducts = inventory.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.sku.toLowerCase().includes(searchTerm.toLowerCase())
+    item?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item?.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) return (
+    <div className="flex h-64 items-center justify-center text-slate-400">
+      <Loader2 className="animate-spin mr-2" /> Loading Data...
+    </div>
   );
 
   return (
@@ -36,7 +73,6 @@ export default function InventoryPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Warehouse Inventory</h2>
-          <p className="text-slate-500 text-sm">Real-time stock monitoring.</p>
         </div>
         
         <div className="flex gap-3 w-full md:w-auto">
@@ -72,33 +108,20 @@ export default function InventoryPage() {
             {filteredProducts.length > 0 ? (
               filteredProducts.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Package size={16} /></div>
-                      <span className="font-semibold text-slate-800">{item.name}</span>
-                    </div>
-                  </td>
+                  <td className="px-6 py-4 font-semibold text-slate-800">{item.name}</td>
                   <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{item.stock}</span>
-                      {item.stock < 10 && (
-                        <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded">LOW</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-slate-600">${item.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 font-bold">{item.stock}</td>
+                  <td className="px-6 py-4 text-right text-slate-600">${parseFloat(item.price).toFixed(2)}</td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="4" className="px-6 py-12 text-center text-slate-400">No products found.</td>
-              </tr>
+              <tr><td colSpan="4" className="px-6 py-12 text-center text-slate-400">No products found.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
+      {/* MODAL CODE... (stays exactly as you had it) */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -110,10 +133,10 @@ export default function InventoryPage() {
               <input required value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Product Name" />
               <input required value={newSku} onChange={(e) => setNewSku(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="SKU (e.g. ITEM-001)" />
               <div className="grid grid-cols-2 gap-4">
-                <input required type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Price" />
+                <input required type="number" step="0.01" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Price" />
                 <input required type="number" value={newStock} onChange={(e) => setNewStock(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Initial Stock" />
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">Save Product</button>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">Save to Database</button>
             </form>
           </div>
         </div>

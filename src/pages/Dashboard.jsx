@@ -1,23 +1,54 @@
+import { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { Package, AlertCircle, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Package, AlertCircle, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function Dashboard() {
-  const { inventory, logs } = useStore();
+  const { inventory, fetchInventory } = useStore();
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        // 1. Fetch Inventory via Store
+        await fetchInventory();
+        
+        // 2. Fetch Logs locally for the table
+        const logRes = await axios.get('http://127.0.0.1:8000/api/logs', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setLogs(logRes.data);
+      } catch (error) {
+        console.error("Dashboard load error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboardData();
+  }, [fetchInventory]);
+
+  // Calculate Revenue using the new Laravel nested structure
   const totalRevenue = logs
     .filter(log => log.type === 'OUT')
     .reduce((acc, log) => {
-      // Find the price of the product from inventory to calculate value
-      const product = inventory.find(p => p.name === log.productName);
-      const price = product ? product.price : 0;
+      // Access price through the product relationship sent by Laravel
+      const price = log.product ? Number(log.product.price) : 0;
       return acc + (price * log.qty);
     }, 0);
+
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center text-slate-400">
+      <Loader2 className="animate-spin mr-2" /> Synchronizing Dashboard...
+    </div>
+  );
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">System Overview</h2>
-        <p className="text-slate-500 text-sm">Real-time inventory and sales performance.</p>
+        <p className="text-slate-500 text-sm">Real-time performance metrics</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -26,7 +57,7 @@ export default function Dashboard() {
         <StatCard label="Total Sales" val={logs.filter(l => l.type === 'OUT').length} icon={<ShoppingCart/>} color="bg-amber-500" />
         <StatCard 
           label="Total Revenue" 
-          val={`$${totalRevenue.toLocaleString()}`} 
+          val={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
           icon={<DollarSign/>} 
           color="bg-emerald-500" 
         />
@@ -49,7 +80,10 @@ export default function Dashboard() {
             <tbody className="divide-y divide-slate-100">
               {logs.slice(0, 5).map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-700">{log.productName}</td>
+                  <td className="px-6 py-4 font-medium text-slate-700">
+                    {/* Updated to use the Laravel relationship name */}
+                    {log.product?.name || 'Unknown Product'}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
                       log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
@@ -65,7 +99,7 @@ export default function Dashboard() {
               ))}
               {logs.length === 0 && (
                 <tr>
-                  <td colSpan="3" className="px-6 py-10 text-center text-slate-400 italic text-sm">No recent activity found.</td>
+                  <td colSpan="3" className="px-6 py-10 text-center text-slate-400 italic text-sm">No activity recorded in database.</td>
                 </tr>
               )}
             </tbody>

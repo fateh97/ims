@@ -1,43 +1,64 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
+import axios from 'axios';
 
-export const useStore = create((set) => ({
+export const useStore = create((set, get) => ({
     user: null,
-    inventory: [
-    { id: 1, name: "Dell G15 Laptop", sku: "LP-001", stock: 10, price: 1200 },
-    { id: 2, name: "Logitech MX Mouse", sku: "MS-992", stock: 45, price: 99 },
-    ],
+    inventory: [],
     logs: [],
-    login: (userData)=> set({ user: userData }),
-    logout: () => set({ user: null }),
 
+    // --- AUTH ACTIONS ---
+    login: (userData) => set({ user: userData }),
+    logout: () => {
+        localStorage.removeItem('auth_token');
+        set({ user: null });
+    },
+
+    // --- FETCH ACTIONS ---
+    // This is the line you needed! It fetches the latest data from MySQL
+    fetchInventory: async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await axios.get('http://127.0.0.1:8000/api/products', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const data = Array.isArray(response.data[0]) ? response.data[0] : response.data;
+            set({ inventory: data });
+        } catch (error) {
+            console.error("Fetch Inventory Error:", error);
+        }
+    },
+
+    // --- TRANSACTION ACTIONS ---
+    // We removed the manual math because Laravel handles it now!
+    addTransaction: async (productId, type, qty, ref) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            
+            // 1. Tell Laravel to record the log and update stock
+            await axios.post('http://127.0.0.1:8000/api/add-logs', {
+                product_id: productId,
+                type: type,
+                qty: qty,
+                ref: ref
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // 2. Refresh the inventory in React so the user sees the new stock numbers
+            await get().fetchInventory();
+
+            return true;
+        } catch (error) {
+            console.error("Transaction failed:", error);
+            return false;
+        }
+    },
+
+    // Used for the initial "Add Product" modal
     addProduct: (newProduct) => set((state) => ({
         inventory: [...state.inventory, newProduct]
     })),
 
-    // This function handles the IN and OUT logic
-    addTransaction: (productId, qty, type, ref) => set((state) => {
-        const updatedInventory = state.inventory.map(item => {
-        if (item.id === productId) {
-            // If 'OUT', we subtract. If 'IN', we add.
-            const newStock = type === 'OUT' ? item.stock - qty : item.stock + qty;
-            return { ...item, stock: newStock };
-        }
-        return item;
-        });
-
-    const product = state.inventory.find(p => p.id === productId);
-    const newLog = {
-      id: Date.now(),
-      productName: product.name,
-      type, // 'IN' or 'OUT'
-      qty,
-      ref,
-      date: new Date().toLocaleString()
-    };
-
-    return { 
-      inventory: updatedInventory, 
-      logs: [newLog, ...state.logs] 
-    };
-  }),
+    setInventory: (items) => set({ inventory: items }),
 }));
