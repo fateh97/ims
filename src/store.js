@@ -42,7 +42,8 @@ export const useStore = create((set, get) => ({
                 qty: qty,
                 ref: ref
             }, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
+                'Content-Type': 'multipart/form-data'
             });
 
             // 2. Refresh the inventory in React so the user sees the new stock numbers

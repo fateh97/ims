@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, Package, Plus, X, DollarSign, Tag, AlertTriangle, Loader2 } from 'lucide-react';
+import { Search, Package, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Trash2, Edit3 } from 'lucide-react';
 import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory, addProduct, fetchInventory } = useStore();
+  const { inventory, addProduct, fetchInventory, setInventory } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  //Modals State
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [formData, setFormData] = useState({ name: "", sku: "", price: "", stock: "" });
 
   // Form State
   const [newName, setNewName] = useState("");
@@ -31,8 +36,6 @@ export default function InventoryPage() {
     loadData();
 
   }, []);
-
-  console.log("Current Inventory in State:", inventory);
   // SAVE PRODUCT TO LARAVEL
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -54,6 +57,49 @@ export default function InventoryPage() {
       setNewName(""); setNewSku(""); setNewPrice(""); setNewStock("");
     } catch (error) {
       alert("Error saving product. Check if SKU is unique.");
+    }
+  };
+
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      sku: product.sku,
+      price: product.price,
+      stock: product.stock
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await axios.put(`http://127.0.0.1:8000/api/update-product/${editingProduct.id}`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update local state without refreshing the whole page
+      const updated = inventory.map(item => item.id === editingProduct.id ? response.data : item);
+      setInventory(updated);
+      setIsEditOpen(false);
+    } catch (error) {
+      alert("Error updating product.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const token = localStorage.getItem('auth_token');
+      await axios.delete(`http://127.0.0.1:8000/api/delete-product/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const updatedInventory = inventory.filter(item => item.id !== id);
+      setInventory(updatedInventory); // Refresh inventory after deletion
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product. Please try again.");
     }
   };
 
@@ -102,6 +148,7 @@ export default function InventoryPage() {
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">SKU</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Stock</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Price</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -112,6 +159,15 @@ export default function InventoryPage() {
                   <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
                   <td className="px-6 py-4 font-bold">{item.stock}</td>
                   <td className="px-6 py-4 text-right text-slate-600">${parseFloat(item.price).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => openEditModal(item)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={18} /></button>
+                    <button 
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
@@ -136,7 +192,27 @@ export default function InventoryPage() {
                 <input required type="number" step="0.01" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Price" />
                 <input required type="number" value={newStock} onChange={(e) => setNewStock(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Initial Stock" />
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">Save to Database</button>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">Save</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* EDIT MODAL (stays exactly as you had it) */}
+      {isEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+            <div className="p-6 border-b flex justify-between items-center">
+              <h3 className="text-xl font-bold text-slate-800">Edit Product</h3>
+              <button onClick={() => setIsEditOpen(false)}><X size={24} /></button>
+            </div>
+            <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
+              <input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Product Name" />
+              <input required value={formData.sku} onChange={(e) => setFormData({...formData, sku: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="SKU" />
+              <div className="grid grid-cols-2 gap-4">
+                <input required type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Price" />
+                <input required type="number" value={formData.stock} onChange={(e) => setFormData({...formData, stock: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Stock" />
+              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700">Update Product</button>
             </form>
           </div>
         </div>
