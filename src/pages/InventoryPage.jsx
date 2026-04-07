@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, Package, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Trash2, Edit3 } from 'lucide-react';
+import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Trash2, Edit3 } from 'lucide-react';
 import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory, addProduct, fetchInventory, setInventory } = useStore();
+  const { inventory,logs, addProduct, fetchInventory, fetchLogs, setInventory } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const API_BASE_URL = "http://127.0.0.1:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +27,7 @@ export default function InventoryPage() {
     const loadData = async () => {
       try {
         await fetchInventory();
+        await fetchLogs(); // Fetch logs to get attachment info
       } catch (error) {
         console.error("Failed to load inventory:", error);
       } finally {
@@ -153,25 +155,59 @@ export default function InventoryPage() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredProducts.length > 0 ? (
-              filteredProducts.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-slate-800">{item.name}</td>
-                  <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
-                  <td className="px-6 py-4 font-bold">{item.stock}</td>
-                  <td className="px-6 py-4 text-right text-slate-600">${parseFloat(item.price).toFixed(2)}</td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => openEditModal(item)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={18} /></button>
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
+              filteredProducts.map((item) => {
+                const lastReceipt = (logs || []).find(l => 
+                  Number(l.product_id) === Number(item.id) && 
+                  l.attachment
+                );
+                
+
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-800">{item.name}</span>
+                          <button 
+                            onClick={() => window.open(`${API_BASE_URL}/uploads/${lastReceipt.attachment}`, '_blank')}
+                            className="flex items-center gap-1 text-[10px] text-blue-500 font-bold hover:text-blue-700 mt-1 transition-colors"
+                          >
+                            <FileText size={12} />View Attachment
+                          </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
+                    <td className={`px-6 py-4 font-bold ${item.stock < 5 ? 'text-rose-600' : 'text-slate-700'}`}>
+                      {item.stock}
+                    </td>
+                    <td className="px-6 py-4 text-right text-slate-600 font-medium">
+                      ${parseFloat(item.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-right flex justify-end gap-1">
+                      {/* Action Buttons */}
+                      <button 
+                        onClick={() => openEditModal(item)} 
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Edit Product"
+                      >
+                        <Edit3 size={18} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                        title="Delete Product"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
-              <tr><td colSpan="4" className="px-6 py-12 text-center text-slate-400">No products found.</td></tr>
+              <tr>
+                <td colSpan="5" className="px-6 py-12 text-center text-slate-400 italic">
+                  No products found in warehouse.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

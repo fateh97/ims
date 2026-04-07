@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useState } from 'react'; 
 import { useStore } from './store'; 
-import { LayoutDashboard, FileText, Package, ClipboardList, LogOut, Loader2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Package, ClipboardList,ShoppingCart, Truck, LogOut, Loader2 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
-import InvoicePage from './pages/InvoicePage';
 import LogPage from './pages/LogPage';
 import InventoryPage from './pages/InventoryPage';
+import CustomerInvoice from './pages/CustomerInvoice';
+import SupplierEntry from './pages/SupplierEntry';
 import Login from './pages/Login';
 
 export default function App() {
@@ -39,11 +40,15 @@ export default function App() {
               <Link to="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
                 <LayoutDashboard size={18} /> Dashboard
               </Link>
-              <Link to="/invoices" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
-                <FileText size={18} /> Create Invoice
-              </Link>
               <Link to="/inventory" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
                 <Package size={18} /> Inventory
+              </Link>
+              <Link to="/customer-sale" className="flex items-center gap-3 p-3 rounded-xl text-rose-600 hover:bg-rose-50">
+                <ShoppingCart size={20} /> Customer Sale
+              </Link>
+
+              <Link to="/supplier-restock" className="flex items-center gap-3 p-3 rounded-xl text-emerald-600 hover:bg-emerald-50">
+                <Truck size={20} /> Supplier Restock
               </Link>
               <Link to="/logs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
                 <ClipboardList size={18} /> Inventory Log
@@ -73,7 +78,8 @@ export default function App() {
         <main className="flex-1 p-10 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/invoices" element={<InvoicePage />} />
+            <Route path="/customer-sale" element={<CustomerInvoice />} />
+            <Route path="/supplier-restock" element={<SupplierEntry />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/logs" element={<LogPage />} />
           </Routes>

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Clock, ArrowUpRight, ArrowDownLeft, Printer, X, FileText, Loader2 } from 'lucide-react';
+import { Clock, ArrowUpRight, ArrowDownLeft, Printer, X, FileText, Loader2, ImageIcon } from 'lucide-react';
 import axios from 'axios';
 
 export default function LogPage() {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
+  const API_BASE_URL = "http://127.0.0.1:8000";
 
   // 1. Fetch logs from Laravel API on load
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function LogPage() {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Time</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Product</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Type</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Action</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Attachment</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -72,13 +73,17 @@ export default function LogPage() {
                       {log.type === 'IN' ? 'STOCK IN' : 'STOCK OUT'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => setSelectedLog(log)}
-                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                    >
-                      <Printer size={18} />
-                    </button>
+                  <td className="px-6 py-4">
+                    {log.attachment ? (
+                      <button 
+                        onClick={() => window.open(`${API_BASE_URL}/uploads/${log.attachment}`, '_blank')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all text-xs font-bold"
+                      >
+                        <ImageIcon size={14} /> View
+                      </button>
+                    ) : (
+                      <span className="text-slate-300 text-[10px] italic">N/A</span>
+                    )}
                   </td>
                 </tr>
               ))}

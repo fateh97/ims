@@ -29,29 +29,39 @@ export const useStore = create((set, get) => ({
         }
     },
 
+    fetchLogs: async () => {
+        try {
+            const res = await axios.get('http://127.0.0.1:8000/api/logs', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+            });
+           set({ logs: Array.isArray(res.data) ? res.data : [] });
+        } catch (err) {
+            console.error("Failed to fetch logs", err);
+            set({ logs: [] }); // Set to empty array on error to prevent crashes
+        }
+    },
+
     // --- TRANSACTION ACTIONS ---
     // We removed the manual math because Laravel handles it now!
-    addTransaction: async (productId, type, qty, ref) => {
+    addTransaction: async (formData) => {
         try {
             const token = localStorage.getItem('auth_token');
             
-            // 1. Tell Laravel to record the log and update stock
-            await axios.post('http://127.0.0.1:8000/api/add-logs', {
-                product_id: productId,
-                type: type,
-                qty: qty,
-                ref: ref
-            }, {
-                headers: { Authorization: `Bearer ${token}` },
-                'Content-Type': 'multipart/form-data'
+            // We send the entire formData object directly
+            await axios.post('http://127.0.0.1:8000/api/add-logs', formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    // This header is crucial for file uploads
+                    'Content-Type': 'multipart/form-data' 
+                }
             });
 
-            // 2. Refresh the inventory in React so the user sees the new stock numbers
+            // Refresh the inventory so the new (or updated) product appears
             await get().fetchInventory();
 
             return true;
         } catch (error) {
-            console.error("Transaction failed:", error);
+            console.error("Transaction failed:", error.response?.data || error.message);
             return false;
         }
     },

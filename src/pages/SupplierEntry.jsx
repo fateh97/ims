@@ -1,0 +1,97 @@
+import { useState, useEffect } from 'react';
+import { useStore } from '../store';
+import { Truck, Upload, FileCheck, Loader2, ArrowDownLeft } from 'lucide-react';
+
+export default function SupplierEntry() {
+  const { inventory, fetchInventory, addTransaction } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [productSearch, setProductSearch] = useState(""); 
+  const [quantity, setQuantity] = useState("");
+  const [attachment, setAttachment] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      if (inventory.length === 0) await fetchInventory();
+      setLoading(false);
+    };
+    load();
+  }, [fetchInventory, inventory.length]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    const invRef = `SUPP-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Create the bundle
+    const data = new FormData();
+    data.append('product_name', productSearch); // Send text name
+    data.append('type', 'IN');
+    data.append('qty', quantity);
+    data.append('ref', invRef);
+    
+    // Only append if a file was actually selected
+    if (attachment instanceof File) {
+        data.append('attachment', attachment);
+    }
+
+    // Call the updated store function
+    const result = await addTransaction(data);
+
+    if (result) {
+        setSuccess(true);
+        setProductSearch("");
+        setQuantity("");
+        setAttachment(null);
+        setTimeout(() => setSuccess(false), 5000);
+    } else {
+        alert("Server error. Please check your Laravel logs.");
+    }
+    
+    setIsProcessing(false);
+  };
+
+  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin" /></div>;
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-6 bg-emerald-600 text-white flex items-center gap-3">
+          <Truck size={24} />
+          <h2 className="text-xl font-bold">Register Supplier Package</h2>
+        </div>
+
+        {success && <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center">Stock Increased Successfully!</div>}
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Product Name (from Package)</label>
+              <input required type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} 
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Type name exactly..." />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Quantity Received</label>
+              <input required type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-slate-700">Upload Supplier Receipt</label>
+            <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-emerald-500 transition-colors">
+              <input type="file" onChange={(e) => setAttachment(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              {attachment ? <div className="flex flex-col items-center"><FileCheck className="text-emerald-500" /> <span>{attachment.name}</span></div> : <div className="flex flex-col items-center"><Upload /> <span>Click to upload receipt</span></div>}
+            </div>
+          </div>
+
+          <button type="submit" disabled={isProcessing} className="w-full py-4 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg flex items-center justify-center gap-2">
+             {isProcessing ? <Loader2 className="animate-spin" /> : <ArrowDownLeft size={18} />} Confirm Reception
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
