@@ -149,8 +149,8 @@ export default function InventoryPage() {
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Product</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">SKU</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Stock</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Price</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Action</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Price</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -179,10 +179,10 @@ export default function InventoryPage() {
                     <td className={`px-6 py-4 font-bold ${item.stock < 5 ? 'text-rose-600' : 'text-slate-700'}`}>
                       {item.stock}
                     </td>
-                    <td className="px-6 py-4 text-right text-slate-600 font-medium">
-                      ${parseFloat(item.price).toFixed(2)}
+                    <td className="px-6 py-4 text-slate-600 font-medium">
+                      RM {parseFloat(item.price).toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-1">
+                    <td className="px-6 py-4">
                       {/* Action Buttons */}
                       <button 
                         onClick={() => openEditModal(item)} 

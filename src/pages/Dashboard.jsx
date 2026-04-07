@@ -70,7 +70,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="font-bold text-rose-900 text-sm">{item.name}</p>
-                    <p className="text-rose-600 text-xs">Only {item.stock} left in warehouse</p>
+                    <p className="text-rose-600 text-xs">Only {item.stock} left in WBM ProShop</p>
                   </div>
                 </div>
               </div>
@@ -86,7 +86,7 @@ export default function Dashboard() {
         <StatCard label="Total Sales" val={logs.filter(l => l.type === 'OUT').length} icon={<ShoppingCart/>} color="bg-amber-500" />
         <StatCard 
           label="Total Revenue" 
-          val={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
+          val={`RM ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
           icon={<DollarSign/>} 
           color="bg-emerald-500" 
         />

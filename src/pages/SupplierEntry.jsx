@@ -63,7 +63,7 @@ export default function SupplierEntry() {
           <h2 className="text-xl font-bold">Register Supplier Package</h2>
         </div>
 
-        {success && <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center">Stock Increased Successfully!</div>}
+        {success && <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center">Stock Added Successfully!</div>}
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
