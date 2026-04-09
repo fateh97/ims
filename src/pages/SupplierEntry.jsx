@@ -10,6 +10,7 @@ export default function SupplierEntry() {
   const [attachment, setAttachment] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [unitPrice, setUnitPrice] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -18,6 +19,8 @@ export default function SupplierEntry() {
     };
     load();
   }, [fetchInventory, inventory.length]);
+
+  const totalAmount = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +33,7 @@ export default function SupplierEntry() {
     data.append('product_name', productSearch); // Send text name
     data.append('type', 'IN');
     data.append('qty', quantity);
+    data.append('unit_price', unitPrice);
     data.append('ref', invRef);
     
     // Only append if a file was actually selected
@@ -44,6 +48,7 @@ export default function SupplierEntry() {
         setSuccess(true);
         setProductSearch("");
         setQuantity("");
+        setUnitPrice("");
         setAttachment(null);
         setTimeout(() => setSuccess(false), 5000);
     } else {
@@ -66,17 +71,33 @@ export default function SupplierEntry() {
         {success && <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center">Stock Added Successfully!</div>}
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Product Name */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Product Name (from Package)</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Product Name</label>
               <input required type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} 
-                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Type name exactly..." />
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
+
+            {/* Quantity */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Quantity Received</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Quantity</label>
               <input required type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
-                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0" />
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
+
+            {/* Supplier Price */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Unit Cost (RM)</label>
+              <input required type="number" step="0.01" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)}
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0.00" />
+            </div>
+          </div>
+
+          {/* Real-time Total Display */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200 flex justify-between items-center">
+            <span className="text-slate-500 font-medium">Total Amount:</span>
+            <span className="text-xl font-black text-emerald-600">RM{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
           </div>
 
           <div className="space-y-2">

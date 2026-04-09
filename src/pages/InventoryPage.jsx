@@ -112,7 +112,7 @@ export default function InventoryPage() {
 
   if (loading) return (
     <div className="flex h-64 items-center justify-center text-slate-400">
-      <Loader2 className="animate-spin mr-2" /> Loading Data...
+      <Loader2 className="animate-spin mr-2" /> Loading...
     </div>
   );
 
@@ -120,7 +120,7 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Warehouse Inventory</h2>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">WBM ProShop Inventory</h2>
         </div>
         
         <div className="flex gap-3 w-full md:w-auto">
@@ -150,6 +150,7 @@ export default function InventoryPage() {
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">SKU</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Stock</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Price</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Supplier Price</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Action</th>
             </tr>
           </thead>
@@ -181,6 +182,9 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4 text-slate-600 font-medium">
                       RM {parseFloat(item.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 font-medium">
+                      RM {parseFloat(item.supplier_price).toFixed(2)}
                     </td>
                     <td className="px-6 py-4">
                       {/* Action Buttons */}

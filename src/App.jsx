@@ -5,6 +5,7 @@ import { LayoutDashboard, FileText, Package, ClipboardList,ShoppingCart, Truck, 
 
 import Dashboard from './pages/Dashboard';
 import LogPage from './pages/LogPage';
+import ReportsPage from './pages/Reporting';
 import InventoryPage from './pages/InventoryPage';
 import CustomerInvoice from './pages/CustomerInvoice';
 import SupplierEntry from './pages/SupplierEntry';
@@ -33,7 +34,7 @@ export default function App() {
         <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col print:hidden">
           <div className="flex-1">
             <h1 className="text-xl font-bold mb-8 text-blue-400 uppercase tracking-tight">
-              IMS - Inventory
+              WBM PROSHOP
             </h1>
             
             <nav className="space-y-2">
@@ -52,6 +53,9 @@ export default function App() {
               </Link>
               <Link to="/logs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
                 <ClipboardList size={18} /> Inventory Log
+              </Link>
+              <Link to="/reports" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
+                <FileText size={18} /> Reports
               </Link>
             </nav>
           </div>
@@ -82,6 +86,7 @@ export default function App() {
             <Route path="/supplier-restock" element={<SupplierEntry />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/logs" element={<LogPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
           </Routes>
         </main>
       </div>
