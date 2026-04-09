@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store';
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import logoImg from '../assets/WBM logo.jpeg';
+import { Lock, Mail, Eye, EyeOff, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 
 export default function Login() {
@@ -66,11 +67,11 @@ export default function Login() {
       <div className="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl border border-slate-800/10">
         
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-blue-100 text-blue-600 rounded-2xl mb-4">
-            <ShieldCheck size={32} />
+          <div className="inline-flex p-3 rounded-2xl mb-4">
+            <img src={logoImg} alt="WBM Logo" className="w-16 rounded-full" />
           </div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-            {isResetMode ? "Reset Password" : "Welcome to IMS"}
+            {isResetMode ? "Reset Password" : "WBM PROSHOP"}
           </h2>
         </div>
 
