@@ -34,7 +34,7 @@ export const useStore = create((set, get) => ({
             const res = await axios.get('http://127.0.0.1:8000/api/logs', {
                 headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
             });
-           set({ logs: Array.isArray(res.data) ? res.data : [] });
+            set({ logs: Array.isArray(res.data) ? res.data : [] });
         } catch (err) {
             console.error("Failed to fetch logs", err);
             set({ logs: [] }); // Set to empty array on error to prevent crashes
@@ -46,13 +46,13 @@ export const useStore = create((set, get) => ({
     addTransaction: async (formData) => {
         try {
             const token = localStorage.getItem('auth_token');
-            
+
             // We send the entire formData object directly
             await axios.post('http://127.0.0.1:8000/api/add-logs', formData, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${token}`,
                     // This header is crucial for file uploads
-                    'Content-Type': 'multipart/form-data' 
+                    'Content-Type': 'multipart/form-data'
                 }
             });
 
@@ -72,4 +72,23 @@ export const useStore = create((set, get) => ({
     })),
 
     setInventory: (items) => set({ inventory: items }),
+
+    users: [],
+    fetchUsers: async () => {
+        const res = await axios.get('http://127.0.0.1:8000/api/users', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        set({ users: res.data });
+    },
+    registerUser: async (userData) => {
+        try {
+            await axios.post('http://127.0.0.1:8000/api/users', userData, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+            });
+            get().fetchUsers();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
 }));
