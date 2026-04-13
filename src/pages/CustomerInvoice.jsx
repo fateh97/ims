@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import logoImg from '../assets/WBM logo.jpeg';
+import logoImg from '../assets/wbm-logo.jpeg';
 import { FileText, ArrowUpRight, CheckCircle2, Printer, Loader2, ShoppingCart, X } from 'lucide-react';
 
 export default function CustomerInvoice() {
@@ -22,7 +22,7 @@ export default function CustomerInvoice() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const product = inventory.find(p => p.id === Number(selectedProductId));
     if (!product || product.stock < Number(quantity)) {
       alert("Insufficient stock!");
@@ -31,7 +31,7 @@ export default function CustomerInvoice() {
 
     setIsProcessing(true);
     const invRef = `SALE-${Math.floor(1000 + Math.random() * 9000)}`;
-    
+
     const data = new FormData();
     data.append('product_id', product.id);
     data.append('type', 'OUT');
@@ -48,12 +48,12 @@ export default function CustomerInvoice() {
         qty: quantity,
         price: product.price,
         total: product.price * Number(quantity),
-        date: new Date().toLocaleString([], { 
-          year: 'numeric', 
-          month: 'short', 
+        date: new Date().toLocaleString([], {
+          year: 'numeric',
+          month: 'short',
           day: 'numeric',
-          hour: '2-digit', 
-          minute: '2-digit' 
+          hour: '2-digit',
+          minute: '2-digit'
         })
       });
       setSuccess(true);
@@ -71,14 +71,14 @@ export default function CustomerInvoice() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
-      
+
       {/* FORM SECTION - Hidden during print */}
       <div className="print:hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 bg-rose-600 text-white flex items-center gap-3">
           <ShoppingCart size={24} />
           <h2 className="text-xl font-bold">New Customer Sale</h2>
         </div>
-        
+
         {success && (
           <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center border-b flex items-center justify-center gap-2">
             <CheckCircle2 size={18} /> Purchase Successfull!
@@ -89,7 +89,7 @@ export default function CustomerInvoice() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Select Product</label>
-              <select required value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} 
+              <select required value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)}
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500">
                 <option value="">Choose item...</option>
                 {inventory.map(item => (
@@ -131,7 +131,7 @@ export default function CustomerInvoice() {
             <div className="space-y-6 relative">
               <div className="flex justify-between items-start border-b pb-6">
                 <div className="flex items-center gap-4">
-                  <img src={logoImg} alt="WBM Logo" className="w-16 rounded-full" />
+                  <img src={logoImg} alt="wbm-logo" className="w-16 rounded-full" />
                   <div>
                     <h1 className="text-2xl font-black text-slate-900 italic">WBM PROSHOP</h1>
                     <p className="text-sm text-slate-500">Official Purchase Receipt</p>
@@ -181,7 +181,7 @@ export default function CustomerInvoice() {
 
             {/* Print Button (Hidden during print) */}
             <div className="mt-8 print:hidden">
-              <button 
+              <button
                 onClick={handlePrint}
                 className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all"
               >

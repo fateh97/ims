@@ -4,7 +4,7 @@ import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Tra
 import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory,logs, addProduct, fetchInventory, fetchLogs, setInventory } = useStore();
+  const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const API_BASE_URL = "http://127.0.0.1:8000";
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function InventoryPage() {
       } catch (error) {
         console.error("Failed to load inventory:", error);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
@@ -122,18 +122,18 @@ export default function InventoryPage() {
         <div>
           <h2 className="text-2xl font-bold text-slate-800 tracking-tight">WBM ProShop Inventory</h2>
         </div>
-        
+
         <div className="flex gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search inventory..." 
+            <input
+              type="text"
+              placeholder="Search inventory..."
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button 
+          <button
             onClick={() => setIsOpen(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
           >
@@ -157,23 +157,23 @@ export default function InventoryPage() {
           <tbody className="divide-y divide-slate-100">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((item) => {
-                const lastReceipt = (logs || []).find(l => 
-                  Number(l.product_id) === Number(item.id) && 
+                const lastReceipt = (logs || []).find(l =>
+                  Number(l.product_id) === Number(item.id) &&
                   l.attachment
                 );
-                
+
 
                 return (
                   <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-slate-800">{item.name}</span>
-                          <button 
-                            onClick={() => window.open(`${API_BASE_URL}/uploads/${lastReceipt.attachment}`, '_blank')}
-                            className="flex items-center gap-1 text-[10px] text-blue-500 font-bold hover:text-blue-700 mt-1 transition-colors"
-                          >
-                            <FileText size={12} />View Attachment
-                          </button>
+                        <button
+                          onClick={() => window.open(`${API_BASE_URL}/uploads/${lastReceipt.attachment}`, '_blank')}
+                          className="flex items-center gap-1 text-[10px] text-blue-500 font-bold hover:text-blue-700 mt-1 transition-colors"
+                        >
+                          <FileText size={12} />View Attachment
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
@@ -188,14 +188,14 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4">
                       {/* Action Buttons */}
-                      <button 
-                        onClick={() => openEditModal(item)} 
+                      <button
+                        onClick={() => openEditModal(item)}
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                         title="Edit Product"
                       >
                         <Edit3 size={18} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(item.id)}
                         className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                         title="Delete Product"
@@ -208,7 +208,7 @@ export default function InventoryPage() {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center text-slate-400 italic">
+                <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">
                   No products found in warehouse.
                 </td>
               </tr>
@@ -246,11 +246,11 @@ export default function InventoryPage() {
               <button onClick={() => setIsEditOpen(false)}><X size={24} /></button>
             </div>
             <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
-              <input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Product Name" />
-              <input required value={formData.sku} onChange={(e) => setFormData({...formData, sku: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="SKU" />
+              <input required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Product Name" />
+              <input required value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })} className="w-full px-4 py-2.5 border rounded-xl" placeholder="SKU" />
               <div className="grid grid-cols-2 gap-4">
-                <input required type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Price" />
-                <input required type="number" value={formData.stock} onChange={(e) => setFormData({...formData, stock: e.target.value})} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Stock" />
+                <input required type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Price" />
+                <input required type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-4 py-2.5 border rounded-xl" placeholder="Stock" />
               </div>
               <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700">Update Product</button>
             </form>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import { Printer, FileText, X, ShoppingCart } from 'lucide-react';
-import logoImg from '../assets/WBM logo.jpeg'; // Import your logo
+import logoImg from '../assets/wbm-logo.jpeg'; // Import your logo
 
 export default function ActivityLog() {
   const { logs } = useStore();
@@ -17,9 +17,9 @@ export default function ActivityLog() {
       qty: log.qty,
       price: log.product?.price,
       total: log.qty * log.product?.price,
-      date: new Date(log.created_at).toLocaleString([], { 
-        year: 'numeric', month: 'numeric', day: 'numeric', 
-        hour: '2-digit', minute: '2-digit' 
+      date: new Date(log.created_at).toLocaleString([], {
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
       })
     });
   };
@@ -38,21 +38,20 @@ export default function ActivityLog() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {logs.map((log) => (
+            {logs && logs.length > 0 ? (logs.map((log) => (
               <tr key={log.id}>
                 <td className="px-6 py-4 font-mono text-xs">{log.ref}</td>
                 <td className="px-6 py-4 font-medium">{log.product?.name}</td>
                 <td className="px-6 py-4">
-                   <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
-                    log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+                    }`}>
                     {log.type}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center space-x-2">
                   {/* SHOW PRINT BUTTON ONLY FOR 'OUT' (SALES) */}
                   {log.type === 'OUT' && (
-                    <button 
+                    <button
                       onClick={() => handlePreparePrint(log)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                       title="Reprint Receipt"
@@ -60,7 +59,7 @@ export default function ActivityLog() {
                       <Printer size={18} />
                     </button>
                   )}
-                  
+
                   {/* Existing attachment viewer for 'IN' logs */}
                   {log.attachment && (
                     <button onClick={() => window.open(`${API_BASE_URL}/uploads/${log.attachment}`, '_blank')}
@@ -70,7 +69,17 @@ export default function ActivityLog() {
                   )}
                 </td>
               </tr>
-            ))}
+            ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="px-6 py-20 text-center">
+                  <div className="flex flex-col items-center gap-2 opacity-40">
+                    <FileText size={48} className="text-slate-300" />
+                    <p className="text-slate-500 font-medium">No activity logs found yet.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -79,11 +88,11 @@ export default function ActivityLog() {
       {printData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm print:static print:bg-white print:p-0">
           <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 print:shadow-none print:border-none print:w-full">
-            
+
             {/* Modal Header (Hidden on Print) */}
             <div className="print:hidden flex justify-between mb-6 border-b pb-4">
               <h3 className="font-bold">Reprint Receipt</h3>
-              <button onClick={() => setPrintData(null)}><X size={20}/></button>
+              <button onClick={() => setPrintData(null)}><X size={20} /></button>
             </div>
 
             {/* --- ACTUAL RECEIPT CONTENT (Same as your Customer Page) --- */}
@@ -122,7 +131,7 @@ export default function ActivityLog() {
             </div>
 
             {/* Print Trigger (Hidden on Print) */}
-            <button 
+            <button
               onClick={() => window.print()}
               className="mt-8 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 print:hidden"
             >

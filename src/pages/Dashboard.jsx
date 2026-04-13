@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { Package, AlertCircle, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownLeft, Loader2, Bell } from 'lucide-react';
+import { Package, AlertCircle, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownLeft, Loader2, FileText } from 'lucide-react';
 import axios from 'axios';
 
 export default function Dashboard() {
@@ -81,14 +81,14 @@ export default function Dashboard() {
 
       {/* STAT CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Total Products" val={inventory.length} icon={<Package/>} color="bg-blue-500" />
-        <StatCard label="Low Stock" val={lowStockItems.length} icon={<AlertCircle/>} color="bg-red-500" />
-        <StatCard label="Total Sales" val={logs.filter(l => l.type === 'OUT').length} icon={<ShoppingCart/>} color="bg-amber-500" />
-        <StatCard 
-          label="Total Revenue" 
-          val={`RM ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
-          icon={<DollarSign/>} 
-          color="bg-emerald-500" 
+        <StatCard label="Total Products" val={inventory.length} icon={<Package />} color="bg-blue-500" />
+        <StatCard label="Low Stock" val={lowStockItems.length} icon={<AlertCircle />} color="bg-red-500" />
+        <StatCard label="Total Sales" val={logs.filter(l => l.type === 'OUT').length} icon={<ShoppingCart />} color="bg-amber-500" />
+        <StatCard
+          label="Total Revenue"
+          val={`RM ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          icon={<DollarSign />}
+          color="bg-emerald-500"
         />
       </div>
 
@@ -108,14 +108,13 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {logs.slice(0, 5).map((log) => (
+              {logs && logs.length > 0 ? (logs.slice(0, 5).map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4 font-medium text-slate-700">{log.product?.name || 'N/A'}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                      log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
-                    }`}>
-                      {log.type === 'IN' ? <ArrowDownLeft size={12}/> : <ArrowUpRight size={12}/>}
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+                      }`}>
+                      {log.type === 'IN' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
                       {log.type === 'IN' ? 'IN' : 'OUT'}
                     </span>
                   </td>
@@ -123,7 +122,17 @@ export default function Dashboard() {
                     {log.type === 'IN' ? `+${log.qty}` : `-${log.qty}`}
                   </td>
                 </tr>
-              ))}
+              ))
+              ) : (
+                <tr>
+                  <td colSpan="3" className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-2 opacity-40">
+                      <FileText size={48} className="text-slate-300" />
+                      <p className="text-slate-500 font-medium">No activity logs found yet.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
