@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useState } from 'react'; 
 import { useStore } from './store'; 
+import logoImg from './assets/WBM logo.jpeg';
 import { LayoutDashboard, FileText, Package, ClipboardList,ShoppingCart, Truck, LogOut, Loader2 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
@@ -33,9 +34,16 @@ export default function App() {
         
         <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col print:hidden">
           <div className="flex-1">
-            <h1 className="text-xl font-bold mb-8 text-blue-400 uppercase tracking-tight">
-              WBM PROSHOP
-            </h1>
+            <div className="flex items-center gap-3 mb-8 px-2">
+              <img 
+                src={logoImg} 
+                alt="WBM Logo" 
+                className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/20" 
+              />
+              <h1 className="text-xl font-bold text-blue-400 uppercase tracking-tight leading-tight">
+                WBM PROSHOP
+              </h1>
+            </div>
             
             <nav className="space-y-2">
               <Link to="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
