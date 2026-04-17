@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 export const useStore = create((set, get) => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem('user_data')) || null,
     inventory: [],
     logs: [],
 
