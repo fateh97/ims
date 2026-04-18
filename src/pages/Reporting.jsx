@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store';
 import { DollarSign, Download, TrendingUp, TrendingDown, FileSpreadsheet } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 
 export default function ReportsPage() {
   const { logs, fetchLogs } = useStore(); // Pull fetchLogs from store
@@ -30,8 +30,11 @@ export default function ReportsPage() {
   };
 
   const chartData = logs.reduce((acc, log) => {
-    const date = new Date(log.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-    const existing = acc.find(item => item.date === date);
+    const dateObj = new Date(log.created_at);
+
+    if(isNaN(dateObj.getTime())) return acc;
+    const month = dateObj.toLocaleDateString('en-MY', { month: 'short', year:'numeric' });
+    const existing = acc.find(item => item.month === month);
 
     const amount = log.type === 'IN'
       ? (Number(log.qty) * (Number(log.product?.supplier_price) || 0))
@@ -42,16 +45,16 @@ export default function ReportsPage() {
       else existing.Earned += amount;
     } else {
       acc.push({
-        date,
+        month,
         Spent: log.type === 'IN' ? amount : 0,
         Earned: log.type === 'OUT' ? amount : 0
       });
     }
     return acc;
-  }, []).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-7);
+  }, []).sort((a, b) => new Date(a.month) - new Date(b.month)) // Ensure months are in order
+  .slice(-12);
 
   const hasChartData = chartData.length > 0;
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -94,25 +97,15 @@ export default function ReportsPage() {
       </div>
 
       <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm min-h-[400px] flex flex-col">
-        <h3 className="text-lg font-bold text-slate-800 mb-6">Cash Flow Trend (Last 7 Days)</h3>
+        <h3 className="text-lg font-bold text-slate-800 mb-6">Cash Flow Trend</h3>
 
         {hasChartData ? (
-          <div className="h-[300px] w-full flex-1">
+          <div className="h-[350px] w-full"> {/* Fixed height to avoid flex conflict */}
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorEarned" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
-                  dataKey="date"
+                  dataKey="month"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 12 }}
@@ -122,33 +115,36 @@ export default function ReportsPage() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(value) => `RM${value}`}
+                  tickFormatter={(value) => `RM${value.toLocaleString()}`}
                 />
                 <Tooltip
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="top" align="right" iconType="circle" height={36} />
-                <Area
+                
+                {/* Earned Line (Green) */}
+                <Line
                   type="monotone"
                   dataKey="Earned"
                   stroke="#10b981"
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#colorEarned)"
+                  strokeWidth={4}
+                  dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
-                <Area
+                
+                {/* Spent Line (Red) */}
+                <Line
                   type="monotone"
                   dataKey="Spent"
                   stroke="#f43f5e"
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#colorSpent)"
+                  strokeWidth={4}
+                  dot={{ r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          /* NO DATA STATE */
           <div className="flex-1 flex flex-col items-center justify-center space-y-3 opacity-40 py-10">
             <div className="p-4 bg-slate-100 rounded-full text-slate-400">
               <TrendingUp size={40} />

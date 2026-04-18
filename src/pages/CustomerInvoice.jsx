@@ -19,7 +19,7 @@ export default function CustomerInvoice() {
     };
     load();
   }, [fetchInventory, inventory.length]);
-
+  const totalAmount = (Number(quantity) || 0) * (Number(inventory.find(p => p.id === Number(selectedProductId))?.price || 0));
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -39,7 +39,8 @@ export default function CustomerInvoice() {
     data.append('ref', invRef);
 
     const result = await addTransaction(data);
-
+    
+    
     if (result) {
       // SET DATA FOR THE RECEIPT
       setLastInvoice({
@@ -104,7 +105,12 @@ export default function CustomerInvoice() {
               <input required type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)}
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500" placeholder="0" />
             </div>
+            
           </div>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Total Amount:</span>
+              <span className="text-xl font-black text-red-600">RM{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
           <button type="submit" disabled={isProcessing} className="w-full py-4 rounded-2xl font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
             {isProcessing ? <Loader2 className="animate-spin" /> : <ArrowUpRight size={18} />} Process Sale
           </button>

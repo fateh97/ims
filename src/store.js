@@ -90,5 +90,28 @@ export const useStore = create((set, get) => ({
         } catch (error) {
             return false;
         }
+    },
+
+    brands: [],
+    fetchBrands: async () => {
+        const res = await axios.get('http://127.0.0.1:8000/api/brands');
+        set({ brands: res.data });
+    },
+    addBrand: async (name) => {
+        const res = await axios.post('http://127.0.0.1:8000/api/brands', { name });
+        set((state) => ({ brands: [...state.brands, res.data] }));
+    },
+
+    inventoryTypes: [],
+    fetchInventoryTypes: async () => {
+        const res = await axios.get('http://127.0.0.1:8000/api/inventory-types');
+        set({ inventoryTypes: res.data });
+    },
+    addInventoryType: async (name) => {
+        try {
+            const res = await axios.post('http://127.0.0.1:8000/api/inventory-types', { name });
+            set((state) => ({ inventoryTypes: [...state.inventoryTypes, res.data] }));
+            return true;
+        } catch (err) { return false; }
     }
 }));

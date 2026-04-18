@@ -11,6 +11,10 @@ export default function SupplierEntry() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [unitPrice, setUnitPrice] = useState("");
+  const { brands, inventoryTypes } = useStore();
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedInventoryType, setSelectedInventoryType] = useState("");
+  const [itemName, setItemName] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -31,6 +35,7 @@ export default function SupplierEntry() {
     // Create the bundle
     const data = new FormData();
     data.append('product_name', productSearch); // Send text name
+    data.append('brand_id', selectedBrand); // Send selected brand ID
     data.append('type', 'IN');
     data.append('qty', quantity);
     data.append('unit_price', unitPrice);
@@ -65,19 +70,45 @@ export default function SupplierEntry() {
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 bg-emerald-600 text-white flex items-center gap-3">
           <Truck size={24} />
-          <h2 className="text-xl font-bold">Register Supplier Package</h2>
+          <h2 className="text-xl font-bold">Supplier Inventory</h2>
         </div>
 
         {success && <div className="bg-emerald-50 text-emerald-700 p-4 font-bold text-center">Stock Added Successfully!</div>}
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-1">
             {/* Product Name */}
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Product Name</label>
               <input required type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} 
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Select Type of Product</label>
+              <select 
+                value={selectedInventoryType} 
+                onChange={(e) => setSelectedInventoryType(e.target.value)}
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Choose a type...</option>
+                {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Select Brand</label>
+              <select 
+                value={selectedBrand} 
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Choose a brand...</option>
+                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Quantity */}
             <div>
