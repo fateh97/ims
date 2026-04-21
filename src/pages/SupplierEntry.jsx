@@ -35,7 +35,8 @@ export default function SupplierEntry() {
     // Create the bundle
     const data = new FormData();
     data.append('product_name', productSearch); // Send text name
-    data.append('brand_id', selectedBrand); // Send selected brand ID
+    data.append('brand_id', selectedBrand); 
+    data.append('inventory_type_id', selectedInventoryType);
     data.append('type', 'IN');
     data.append('qty', quantity);
     data.append('unit_price', unitPrice);

@@ -86,7 +86,7 @@ export default function Dashboard() {
         <StatCard label="Total Sales" val={logs.filter(l => l.type === 'OUT').length} icon={<ShoppingCart />} color="bg-amber-500" />
         <StatCard
           label="Total Revenue"
-          val={`RM ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          val={`RM${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
           icon={<DollarSign />}
           color="bg-emerald-500"
         />

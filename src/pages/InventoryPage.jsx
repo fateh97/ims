@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Trash2, Edit3 } from 'lucide-react';
+import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Trash2, Edit3, Truck } from 'lucide-react';
 import axios from 'axios';
 
 export default function InventoryPage() {
@@ -13,41 +13,43 @@ export default function InventoryPage() {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
+  const [isRestockOpen, setIsRestockOpen] = useState(false);
+  const [restockData, setRestockData] = useState({ qty: "", cost: "", file: null });
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   //Modals State
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({ name: "", brand: "", sku: "", price: "", stock: "", supplier_price: "" });
+  const [formData, setFormData] = useState({ name: "", brand: "", price: "", stock: "", supplier_price: "" });
 
   // Form State
   const [newName, setNewName] = useState("");
   const [newBrand, setNewBrand] = useState("");
   const [newInventoryType, setNewInventoryType] = useState("");
-  const [newSku, setNewSku] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newSupplierPrice, setNewSupplierPrice] = useState("");
   const [newStock, setNewStock] = useState("");
 
   // FETCH PRODUCTS FROM LARAVEL
   useEffect(() => {
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      // Fetch everything in parallel
-      await Promise.all([
-        fetchInventory(),
-        fetchLogs(),
-        useStore.getState().fetchBrands(), 
-        useStore.getState().fetchInventoryTypes()
-      ]);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  loadData();
-}, []);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Fetch everything in parallel
+        await Promise.all([
+          fetchInventory(),
+          fetchLogs(),
+          useStore.getState().fetchBrands(), 
+          useStore.getState().fetchInventoryTypes()
+        ]);
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
   // SAVE PRODUCT TO LARAVEL
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -57,7 +59,6 @@ export default function InventoryPage() {
         name: newName,
         brand_id: selectedBrand, // Use the ID from your dropdown
         inventory_type_id: selectedInventoryType, // Use the ID from your dropdown
-        sku: newSku,
         price: parseFloat(newPrice),
         stock: parseInt(newStock),
         supplier_price: parseFloat(newSupplierPrice)
@@ -71,10 +72,10 @@ export default function InventoryPage() {
       setIsOpen(false);
       // Reset all fields
       setNewName(""); setSelectedBrand(""); setSelectedInventoryType(""); 
-      setNewSku(""); setNewPrice(""); setNewStock("");
+      setNewPrice(""); setNewStock("");
     } catch (error) {
       console.error(error);
-      alert("Error saving product. Check if SKU is unique.");
+      alert(error.response?.data?.message || "Failed to add product. Please try again.");
     }
   };
 
@@ -84,7 +85,6 @@ export default function InventoryPage() {
       name: product.name,
       brand: product.brand,
       inventory_type_id: product.inventory_type_id,
-      sku: product.sku,
       price: product.price,
       stock: product.stock,
       supplier_price: product.supplier_price
@@ -105,7 +105,7 @@ export default function InventoryPage() {
       setInventory(updated);
       setIsEditOpen(false);
     } catch (error) {
-      alert("Error updating product.");
+      alert(error.response?.data?.message || "Failed to update product. Please try again.");
     }
   };
 
@@ -124,9 +124,38 @@ export default function InventoryPage() {
     }
   };
 
+  const handleRestock = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('added_stock', restockData.qty);
+    formData.append('supplier_price', restockData.cost);
+    formData.append('attachment', restockData.file);
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await axios.post(`${API_BASE_URL}/api/restock-product/${selectedProduct.id}`, formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}` 
+        }
+      });
+
+      // Update local inventory state
+      const updated = inventory.map(item => item.id === selectedProduct.id ? res.data : item);
+      setInventory(updated);
+      
+      // Refresh logs to show the new attachment immediately
+      fetchLogs(); 
+      
+      setIsRestockOpen(false);
+      setRestockData({ qty: "", cost: "", file: null });
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to restock product. Please try again.");
+    }
+  };
+
   const filteredProducts = inventory.filter(item =>
-    item?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item?.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+    item?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) return (
@@ -167,7 +196,6 @@ export default function InventoryPage() {
             <tr>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Product</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Brand</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">SKU</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Stock</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Price</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Supplier Price</th>
@@ -205,7 +233,6 @@ export default function InventoryPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">{item.brand?.name || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm font-mono text-slate-500">{item.sku}</td>
                     <td className={`px-6 py-4 font-bold ${item.stock < 5 ? 'text-rose-600' : 'text-slate-700'}`}>
                       {item.stock}
                     </td>
@@ -223,6 +250,13 @@ export default function InventoryPage() {
                         title="Edit Product"
                       >
                         <Edit3 size={18} />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedProduct(item); setIsRestockOpen(true); }}
+                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                        title="Quick Restock"
+                      >
+                        <Truck size={18} />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
@@ -382,6 +416,60 @@ export default function InventoryPage() {
               <button type="submit" className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
                 Update Product
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isRestockOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95">
+            <div className="p-8 bg-emerald-50/50 border-b border-emerald-100 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-emerald-800 flex items-center gap-2">
+                  <Truck size={24} /> Restock Item
+                </h3>
+                <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider">{selectedProduct?.name}</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleRestock} className="p-8 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase">Quantity</label>
+                  <input required type="number" value={restockData.qty} 
+                    onChange={(e) => setRestockData({...restockData, qty: e.target.value})}
+                    className="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase">Supplier Price (RM)</label>
+                  <input required type="number" step="0.01" value={restockData.cost} 
+                    onChange={(e) => setRestockData({...restockData, cost: e.target.value})}
+                    className="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0.00" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase">Upload Receipt</label>
+                <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
+                  <input required type="file" 
+                    onChange={(e) => setRestockData({...restockData, file: e.target.files[0]})}
+                    className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div className="text-center">
+                    <FileText className="mx-auto text-slate-300 group-hover:text-emerald-500 transition-colors" size={24} />
+                    <p className="text-xs text-slate-500 mt-2">
+                      {restockData.file ? restockData.file.name : "Click to upload supplier receipt"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsRestockOpen(false)} className="flex-1 py-3 text-slate-500 font-bold">Cancel</button>
+                <button type="submit" className="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all">
+                  Update Stock
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -73,7 +73,7 @@ function AppLayout({ user, logout, isExiting, setIsExiting }) {
               <ShoppingCart size={20} /> Customer Sale
             </Link>
             <Link to="/supplier-restock" className="flex items-center gap-3 p-3 rounded-xl text-emerald-400 hover:bg-emerald-500/10 font-medium">
-              <Truck size={20} /> Supplier Restock
+              <Truck size={20} /> Supplier Stock
             </Link>
             <Link to="/logs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
               <ClipboardList size={18} /> Inventory Log
