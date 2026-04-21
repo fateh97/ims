@@ -41,13 +41,33 @@ export const useStore = create((set, get) => ({
         }
     },
 
-    addTransaction: async (data) => {
+    addTransaction: async (formData) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+
+            await axios.post('http://127.0.0.1:8000/api/add-logs', formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            await get().fetchInventory();
+
+            return true;
+        } catch (error) {
+            console.error("Transaction failed:", error.response?.data || error.message);
+            return null;
+        }
+    },
+
+    customerInvoice: async (data) => {
         try {
             const token = localStorage.getItem('auth_token');
 
             const isFormData = data instanceof FormData;
 
-            const response = await axios.post('http://127.0.0.1:8000/api/add-logs', data, {
+            const response = await axios.post('http://127.0.0.1:8000/api/customer-invoice', data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
@@ -131,7 +151,7 @@ export const useStore = create((set, get) => ({
     inventoryTypes: [],
     fetchInventoryTypes: async () => {
         const res = await axios.get('http://127.0.0.1:8000/api/inventory-types');
-        set({ inventoryTypes: res.data });
+        set({ types: res.data });
     },
     addInventoryType: async (name, accessory) => {
         try {
@@ -139,5 +159,24 @@ export const useStore = create((set, get) => ({
             set((state) => ({ inventoryTypes: [...state.inventoryTypes, res.data] }));
             return true;
         } catch (err) { return false; }
-    }
+    },
+
+    updateInventoryType: async (id, updatedData) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const res = await axios.put(`http://127.0.0.1:8000/api/inventory-types/${id}`, updatedData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            set((state) => ({
+                inventoryTypes: state.inventoryTypes.map(type =>
+                    type.id === id ? res.data : type
+                )
+            }));
+            return true;
+        } catch (error) {
+            console.error("Update failed:", error);
+            return false;
+        }
+    },
 }));

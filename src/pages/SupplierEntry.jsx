@@ -5,13 +5,13 @@ import { Truck, Upload, FileCheck, Loader2, ArrowDownLeft } from 'lucide-react';
 export default function SupplierEntry() {
   const { inventory, fetchInventory, addTransaction } = useStore();
   const [loading, setLoading] = useState(true);
-  const [productSearch, setProductSearch] = useState(""); 
+  const [productSearch, setProductSearch] = useState("");
   const [quantity, setQuantity] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [unitPrice, setUnitPrice] = useState("");
-  const { brands, inventoryTypes } = useStore();
+  const { brands, types } = useStore();
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
@@ -24,6 +24,7 @@ export default function SupplierEntry() {
     load();
   }, [fetchInventory, inventory.length]);
 
+
   const totalAmount = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
   const handleSubmit = async (e) => {
@@ -35,32 +36,32 @@ export default function SupplierEntry() {
     // Create the bundle
     const data = new FormData();
     data.append('product_name', productSearch); // Send text name
-    data.append('brand_id', selectedBrand); 
+    data.append('brand_id', selectedBrand);
     data.append('inventory_type_id', selectedInventoryType);
     data.append('type', 'IN');
     data.append('qty', quantity);
     data.append('unit_price', unitPrice);
     data.append('ref', invRef);
-    
+
     // Only append if a file was actually selected
     if (attachment instanceof File) {
-        data.append('attachment', attachment);
+      data.append('attachment', attachment);
     }
 
     // Call the updated store function
     const result = await addTransaction(data);
 
     if (result) {
-        setSuccess(true);
-        setProductSearch("");
-        setQuantity("");
-        setUnitPrice("");
-        setAttachment(null);
-        setTimeout(() => setSuccess(false), 5000);
+      setSuccess(true);
+      setProductSearch("");
+      setQuantity("");
+      setUnitPrice("");
+      setAttachment(null);
+      setTimeout(() => setSuccess(false), 5000);
     } else {
-        alert("Server error. Please check your Laravel logs.");
+      alert("Server error. Please check your Laravel logs.");
     }
-    
+
     setIsProcessing(false);
   };
 
@@ -81,26 +82,26 @@ export default function SupplierEntry() {
             {/* Product Name */}
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Product Name</label>
-              <input required type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} 
+              <input required type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)}
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Select Type of Product</label>
-              <select 
-                value={selectedInventoryType} 
+              <select
+                value={selectedInventoryType}
                 onChange={(e) => setSelectedInventoryType(e.target.value)}
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose a type...</option>
-                {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Select Brand</label>
-              <select 
-                value={selectedBrand} 
+              <select
+                value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -141,7 +142,7 @@ export default function SupplierEntry() {
           </div>
 
           <button type="submit" disabled={isProcessing} className="w-full py-4 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg flex items-center justify-center gap-2">
-             {isProcessing ? <Loader2 className="animate-spin" /> : <ArrowDownLeft size={18} />} Confirm Reception
+            {isProcessing ? <Loader2 className="animate-spin" /> : <ArrowDownLeft size={18} />} Confirm Reception
           </button>
         </form>
       </div>

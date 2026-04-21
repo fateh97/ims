@@ -4,12 +4,12 @@ import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Tra
 import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, inventoryTypes } = useStore();
+  const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, types } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const API_BASE_URL = "http://127.0.0.1:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const {brands} = useStore();
+  const { brands } = useStore();
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
@@ -39,7 +39,7 @@ export default function InventoryPage() {
         await Promise.all([
           fetchInventory(),
           fetchLogs(),
-          useStore.getState().fetchBrands(), 
+          useStore.getState().fetchBrands(),
           useStore.getState().fetchInventoryTypes()
         ]);
       } catch (error) {
@@ -68,10 +68,10 @@ export default function InventoryPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      addProduct(response.data); 
+      addProduct(response.data);
       setIsOpen(false);
       // Reset all fields
-      setNewName(""); setSelectedBrand(""); setSelectedInventoryType(""); 
+      setNewName(""); setSelectedBrand(""); setSelectedInventoryType("");
       setNewPrice(""); setNewStock("");
     } catch (error) {
       console.error(error);
@@ -134,19 +134,19 @@ export default function InventoryPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const res = await axios.post(`${API_BASE_URL}/api/restock-product/${selectedProduct.id}`, formData, {
-        headers: { 
+        headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         }
       });
 
       // Update local inventory state
       const updated = inventory.map(item => item.id === selectedProduct.id ? res.data : item);
       setInventory(updated);
-      
+
       // Refresh logs to show the new attachment immediately
-      fetchLogs(); 
-      
+      fetchLogs();
+
       setIsRestockOpen(false);
       setRestockData({ qty: "", cost: "", file: null });
     } catch (error) {
@@ -300,8 +300,8 @@ export default function InventoryPage() {
                 <label className="text-xs font-bold text-slate-400 uppercase ml-1">Product Name</label>
                 <div className="relative">
                   <Tag className="absolute left-4 top-3.5 text-slate-300" size={18} />
-                  <input required value={newName} onChange={(e) => setNewName(e.target.value)} 
-                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                  <input required value={newName} onChange={(e) => setNewName(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     placeholder="e.g. The Joker" />
                 </div>
               </div>
@@ -321,7 +321,7 @@ export default function InventoryPage() {
                   <select required value={selectedInventoryType} onChange={(e) => setSelectedInventoryType(e.target.value)}
                     className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Choose type</option>
-                    {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export default function InventoryPage() {
                   <label className="text-[10px] font-black text-blue-400 uppercase">Retail Price</label>
                   <div className="relative">
                     <span className="absolute left-0 top-2 text-xs font-bold text-blue-300">RM</span>
-                    <input required type="number" step="0.01" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} 
+                    <input required type="number" step="0.01" value={newPrice} onChange={(e) => setNewPrice(e.target.value)}
                       className="w-full pl-7 py-2 bg-transparent border-b-2 border-blue-100 outline-none focus:border-blue-500 font-bold text-slate-700" placeholder="0.00" />
                   </div>
                 </div>
@@ -340,13 +340,13 @@ export default function InventoryPage() {
                   <label className="text-[10px] font-black text-emerald-400 uppercase">Cost Price</label>
                   <div className="relative">
                     <span className="absolute left-0 top-2 text-xs font-bold text-emerald-300">RM</span>
-                    <input required type="number" step="0.01" value={newSupplierPrice} onChange={(e) => setNewSupplierPrice(e.target.value)} 
+                    <input required type="number" step="0.01" value={newSupplierPrice} onChange={(e) => setNewSupplierPrice(e.target.value)}
                       className="w-full pl-7 py-2 bg-transparent border-b-2 border-emerald-100 outline-none focus:border-emerald-500 font-bold text-slate-700" placeholder="0.00" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Stock</label>
-                  <input required type="number" value={newStock} onChange={(e) => setNewStock(e.target.value)} 
+                  <input required type="number" value={newStock} onChange={(e) => setNewStock(e.target.value)}
                     className="w-full py-2 bg-transparent border-b-2 border-slate-200 outline-none focus:border-blue-500 font-bold text-slate-700" placeholder="0" />
                 </div>
               </div>
@@ -374,7 +374,7 @@ export default function InventoryPage() {
             <form onSubmit={handleUpdateProduct} className="p-8 space-y-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-400 uppercase ml-1">Product Name</label>
-                <input required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                <input required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
               </div>
 
@@ -390,7 +390,7 @@ export default function InventoryPage() {
                   <label className="text-xs font-bold text-slate-400 uppercase ml-1">Category</label>
                   <select required value={formData.inventory_type_id} onChange={(e) => setFormData({ ...formData, inventory_type_id: e.target.value })}
                     className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none">
-                    {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -398,17 +398,17 @@ export default function InventoryPage() {
               <div className="grid grid-cols-3 gap-4 p-5 bg-slate-50 rounded-3xl border border-slate-100">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Retail Price</label>
-                  <input required type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
+                  <input required type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     className="w-full py-2 bg-transparent border-b-2 border-slate-200 outline-none focus:border-blue-500 font-bold text-slate-700" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Cost Price</label>
-                  <input required type="number" step="0.01" value={formData.supplier_price} onChange={(e) => setFormData({ ...formData, supplier_price: e.target.value })} 
+                  <input required type="number" step="0.01" value={formData.supplier_price} onChange={(e) => setFormData({ ...formData, supplier_price: e.target.value })}
                     className="w-full py-2 bg-transparent border-b-2 border-slate-200 outline-none focus:border-emerald-500 font-bold text-slate-700" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Stock Level</label>
-                  <input required type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} 
+                  <input required type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                     className="w-full py-2 bg-transparent border-b-2 border-slate-200 outline-none focus:border-blue-500 font-bold text-slate-700" />
                 </div>
               </div>
@@ -437,14 +437,14 @@ export default function InventoryPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Quantity</label>
-                  <input required type="number" value={restockData.qty} 
-                    onChange={(e) => setRestockData({...restockData, qty: e.target.value})}
+                  <input required type="number" value={restockData.qty}
+                    onChange={(e) => setRestockData({ ...restockData, qty: e.target.value })}
                     className="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase">Supplier Price (RM)</label>
-                  <input required type="number" step="0.01" value={restockData.cost} 
-                    onChange={(e) => setRestockData({...restockData, cost: e.target.value})}
+                  <input required type="number" step="0.01" value={restockData.cost}
+                    onChange={(e) => setRestockData({ ...restockData, cost: e.target.value })}
                     className="w-full p-3 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0.00" />
                 </div>
               </div>
@@ -452,8 +452,8 @@ export default function InventoryPage() {
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase">Upload Receipt</label>
                 <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
-                  <input required type="file" 
-                    onChange={(e) => setRestockData({...restockData, file: e.target.files[0]})}
+                  <input required type="file"
+                    onChange={(e) => setRestockData({ ...restockData, file: e.target.files[0] })}
                     className="absolute inset-0 opacity-0 cursor-pointer" />
                   <div className="text-center">
                     <FileText className="mx-auto text-slate-300 group-hover:text-emerald-500 transition-colors" size={24} />

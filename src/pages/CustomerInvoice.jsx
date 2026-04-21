@@ -4,7 +4,7 @@ import logoImg from '../assets/wbm-logo.jpeg';
 import { FileText, ArrowUpRight, CheckCircle2, Printer, Loader2, ShoppingCart, X, Plus, Trash2 } from 'lucide-react';
 
 export default function CustomerInvoice() {
-  const { inventory, fetchInventory, addTransaction } = useStore();
+  const { inventory, fetchInventory, customerInvoice } = useStore();
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]); // Array of { id, name, qty, price }
 
@@ -54,7 +54,7 @@ export default function CustomerInvoice() {
 
     // Note: Since we are sending a JSON array, ensure your store.js addTransaction 
     // handles JSON instead of FormData, OR adjust accordingly.
-    const result = await addTransaction(data);
+    const result = await customerInvoice(data);
 
     if (result) {
       setLastInvoice({
@@ -162,8 +162,12 @@ export default function CustomerInvoice() {
                 <div className="flex items-center gap-4">
                   <img src={logoImg} alt="logo" className="w-16 h-16 rounded-full object-cover shadow-sm" />
                   <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tighter italic">WBM PROSHOP</h1>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Official Receipt</p>
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tighter italic uppercase">WBM PROSHOP</h1>
+                    <div className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-[280px] mt-1">
+                      <p>2nd Floor, Ole Ole Shopping Centre, 7, Jalan Pinang A 18/A, Seksyen 18, 40200 Shah Alam.</p>
+                      <p>Tel: +60 11-6274 7678</p>
+                      <p>Reg No: 202603051541</p>
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -172,7 +176,6 @@ export default function CustomerInvoice() {
                 </div>
               </div>
 
-              {/* Meta Info */}
               <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-2xl">
                 <div>
                   <p className="text-slate-400 font-bold text-[10px] uppercase">Date & Time</p>
@@ -180,13 +183,13 @@ export default function CustomerInvoice() {
                 </div>
                 <div className="text-right">
                   <p className="text-slate-400 font-bold text-[10px] uppercase">Payment Status</p>
-                  <p className="font-bold text-emerald-600 uppercase">Paid / Success</p>
+                  <p className="font-bold text-emerald-600 uppercase text-xs">Paid / Success</p>
                 </div>
               </div>
 
-              {/* ITEMS TABLE - The Multi-item fix is here */}
+              {/* ITEMS TABLE */}
               <div className="space-y-3">
-                <div className="flex justify-between px-2 text-[10px] font-black text-slate-400 uppercase">
+                <div className="flex justify-between px-2 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
                   <span>Item Description</span>
                   <div className="flex gap-12">
                     <span>Qty</span>
@@ -197,11 +200,11 @@ export default function CustomerInvoice() {
                 <div className="space-y-2">
                   {lastInvoice.items.map((item, index) => (
                     <div key={index} className="flex justify-between items-center p-3 bg-white border border-slate-50 rounded-xl shadow-sm">
-                      <span className="font-bold text-slate-800">{item.name}</span>
+                      <span className="font-bold text-slate-800 text-sm">{item.name}</span>
                       <div className="flex gap-12 items-center">
-                        <span className="text-slate-500 font-medium text-sm">x{item.qty}</span>
-                        <span className="font-bold text-slate-900 w-20 text-right">
-                          {(item.qty * item.price).toFixed(2)}
+                        <span className="text-slate-500 font-medium text-xs">x{item.qty}</span>
+                        <span className="font-bold text-slate-900 w-20 text-right text-sm">
+                          RM {(item.qty * item.price).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -209,9 +212,10 @@ export default function CustomerInvoice() {
                 </div>
               </div>
 
+              {/* Grand Total */}
               <div className="pt-4 border-t-2 border-slate-100 border-dashed">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-slate-900">Total Amount</span>
+                  <span className="text-lg font-bold text-slate-900 tracking-tight">Total Amount</span>
                   <span className="text-3xl font-black text-rose-600">
                     RM {lastInvoice.total.toFixed(2)}
                   </span>
@@ -220,7 +224,7 @@ export default function CustomerInvoice() {
 
               <div className="pt-6 text-center">
                 <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">
-                  *** Thank you for shopping with WBM ProShop***
+                  *** Thank you for shopping with WBM ProShop ***
                 </p>
               </div>
             </div>
@@ -229,7 +233,7 @@ export default function CustomerInvoice() {
             <div className="mt-8 flex gap-3 print:hidden">
               <button
                 onClick={handlePrint}
-                className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all active:scale-95"
+                className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
               >
                 <Printer size={18} /> Print Invoice
               </button>
