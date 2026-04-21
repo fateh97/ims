@@ -71,6 +71,35 @@ export const useStore = create((set, get) => ({
         inventory: [...state.inventory, newProduct]
     })),
 
+    restockProduct: async (id, restockData) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('added_stock', restockData.qty);
+            formData.append('supplier_price', restockData.cost);
+            formData.append('attachment', restockData.file);
+
+            const res = await axios.post(`http://127.0.0.1:8000/api/restock-product/${id}`, formData, {
+            headers: { 
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${token}` 
+            }
+            });
+
+            // Update the local inventory state immediately
+            set((state) => ({
+            inventory: state.inventory.map(item => item.id === id ? res.data : item)
+            }));
+
+            return { success: true };
+        } catch (error) {
+            console.error("Restock failed:", error);
+            return { success: false, error: error.response?.data?.message };
+        }
+    },
+
     setInventory: (items) => set({ inventory: items }),
 
     users: [],
@@ -107,9 +136,9 @@ export const useStore = create((set, get) => ({
         const res = await axios.get('http://127.0.0.1:8000/api/inventory-types');
         set({ inventoryTypes: res.data });
     },
-    addInventoryType: async (name) => {
+    addInventoryType: async (name, accessory) => {
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/inventory-types', { name });
+            const res = await axios.post('http://127.0.0.1:8000/api/inventory-types', { name, accessory });
             set((state) => ({ inventoryTypes: [...state.inventoryTypes, res.data] }));
             return true;
         } catch (err) { return false; }
