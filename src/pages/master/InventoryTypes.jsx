@@ -5,6 +5,7 @@ import { Layers, Plus, Loader2, Package } from 'lucide-react';
 export default function InventoryTypesPage() {
   const { inventoryTypes, fetchInventoryTypes, addInventoryType } = useStore();
   const [typeName, setTypeName] = useState("");
+  const [prefix, setPrefix] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isAccessory, setIsAccessory] = useState(false);
 
@@ -13,11 +14,12 @@ export default function InventoryTypesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!typeName.trim()) return;
-    console.log("Sending to backend:", { name: typeName, accessory: isAccessory });
+    //console.log("Sending to backend:", { name: typeName, accessory: isAccessory });
     setIsSaving(true);
-    const success = await addInventoryType(typeName, isAccessory);
+    const success = await addInventoryType(typeName, prefix, isAccessory);
     if (success) {
       setTypeName("");
+      setPrefix("");
       setIsAccessory(false);
     }
     setIsSaving(false);
@@ -35,18 +37,27 @@ export default function InventoryTypesPage() {
             <p className="text-sm text-slate-500">Manage categories like Bowling Ball, Glove, or Shoes</p>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4 mb-10">
           <div className="flex flex-col md:flex-row gap-4">
-            <input 
+            <input
               required
-              value={typeName} 
+              value={typeName}
               onChange={(e) => setTypeName(e.target.value)}
               className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               placeholder="New Category Name (e.g. Grip)..."
             />
 
-            <button 
+            <input
+              required
+              maxLength="5"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value.toUpperCase())} // Auto-uppercase
+              className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-mono text-center"
+              placeholder="Prefix (BALL)"
+            />
+
+            <button
               disabled={isSaving}
               className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
             >
@@ -58,10 +69,10 @@ export default function InventoryTypesPage() {
           {/* ACCESSORY RADIO TOGGLE */}
           <div className="flex items-center gap-6 px-2">
             <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Type Classification:</span>
-            
+
             <label className="flex items-center gap-2 cursor-pointer group">
-              <input 
-                type="radio" 
+              <input
+                type="radio"
                 name="classification"
                 checked={!isAccessory}
                 onChange={() => setIsAccessory(false)}
@@ -74,8 +85,8 @@ export default function InventoryTypesPage() {
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer group">
-              <input 
-                type="radio" 
+              <input
+                type="radio"
                 name="classification"
                 checked={isAccessory}
                 onChange={() => setIsAccessory(true)}

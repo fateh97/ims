@@ -41,28 +41,25 @@ export const useStore = create((set, get) => ({
         }
     },
 
-    // --- TRANSACTION ACTIONS ---
-    // We removed the manual math because Laravel handles it now!
-    addTransaction: async (formData) => {
+    addTransaction: async (data) => {
         try {
             const token = localStorage.getItem('auth_token');
 
-            // We send the entire formData object directly
-            await axios.post('http://127.0.0.1:8000/api/add-logs', formData, {
+            const isFormData = data instanceof FormData;
+
+            const response = await axios.post('http://127.0.0.1:8000/api/add-logs', data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    // This header is crucial for file uploads
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
                 }
             });
 
-            // Refresh the inventory so the new (or updated) product appears
             await get().fetchInventory();
 
-            return true;
+            return response.data;
         } catch (error) {
             console.error("Transaction failed:", error.response?.data || error.message);
-            return false;
+            return null;
         }
     },
 
@@ -74,7 +71,7 @@ export const useStore = create((set, get) => ({
     restockProduct: async (id, restockData) => {
         try {
             const token = localStorage.getItem('auth_token');
-            
+
             // Create FormData for file upload
             const formData = new FormData();
             formData.append('added_stock', restockData.qty);
@@ -82,15 +79,15 @@ export const useStore = create((set, get) => ({
             formData.append('attachment', restockData.file);
 
             const res = await axios.post(`http://127.0.0.1:8000/api/restock-product/${id}`, formData, {
-            headers: { 
-                'Content-Type': 'multipart/form-data',
-                Authorization: `Bearer ${token}` 
-            }
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
+                }
             });
 
             // Update the local inventory state immediately
             set((state) => ({
-            inventory: state.inventory.map(item => item.id === id ? res.data : item)
+                inventory: state.inventory.map(item => item.id === id ? res.data : item)
             }));
 
             return { success: true };
