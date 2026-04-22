@@ -46,8 +46,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">System Overview</h2>
-          <p className="text-slate-500 text-sm">Real-time performance and analytics.</p>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Dashboard Overview</h2>
         </div>
       </div>
 
@@ -59,7 +58,7 @@ export default function Dashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
             </span>
-            Critical Stock Alerts ({lowStockItems.length})
+            Critical Inventory Alerts ({lowStockItems.length})
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {lowStockItems.map(item => (
@@ -92,47 +91,54 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* RECENT TRANSACTIONS TABLE */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Inventory Summarization */}
+      <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-bold text-slate-800">Recent Transactions</h3>
-          <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Latest 5</span>
+          <h3 className="font-bold text-slate-800">Inventory Summary</h3>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full uppercase">
+              <Package size={12} /> Total {inventory.length}
+            </div>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-bold tracking-widest">
-              <tr>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4 text-right">Qty</th>
+        <div className="overflow-x-auto h-[400px] overflow-y-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50/80 sticky top-0 backdrop-blur-md">
+              <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <th className="px-6 py-4">Product & Brand</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4 text-right">Stock Level</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {logs && logs.length > 0 ? (logs.slice(0, 5).map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-700">{log.product?.name || 'N/A'}</td>
+            <tbody className="divide-y divide-slate-50">
+              {inventory.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
-                      }`}>
-                      {log.type === 'IN' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
-                      {log.type === 'IN' ? 'IN' : 'OUT'}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-800 transition-colors">{item.name}</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{item.brand?.name || 'Generic'}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg uppercase">
+                      {item.inventory_type?.name || item.inventory_types?.name || 'Uncategorized'}
                     </span>
                   </td>
-                  <td className={`px-6 py-4 text-right font-bold ${log.type === 'IN' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {log.type === 'IN' ? `+${log.qty}` : `-${log.qty}`}
-                  </td>
-                </tr>
-              ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-2 opacity-40">
-                      <FileText size={48} className="text-slate-300" />
-                      <p className="text-slate-500 font-medium">No activity logs found yet.</p>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex flex-col items-end">
+                      <span className={`text-sm font-black ${item.stock <= 10 ? 'text-rose-600' : 'text-slate-900'}`}>
+                        {item.stock}
+                      </span>
+                      <div className="w-16 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${item.stock <= 10 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${Math.min(item.stock, 100)}%` }}
+                        />
+                      </div>
                     </div>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>

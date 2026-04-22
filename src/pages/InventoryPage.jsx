@@ -4,7 +4,7 @@ import { Search, FileText, Plus, X, DollarSign, Tag, AlertTriangle, Loader2, Tra
 import axios from 'axios';
 
 export default function InventoryPage() {
-  const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, types } = useStore();
+  const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, inventoryTypes } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const API_BASE_URL = "http://127.0.0.1:8000";
   const [isOpen, setIsOpen] = useState(false);
@@ -321,7 +321,7 @@ export default function InventoryPage() {
                   <select required value={selectedInventoryType} onChange={(e) => setSelectedInventoryType(e.target.value)}
                     className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Choose type</option>
-                    {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -390,7 +390,7 @@ export default function InventoryPage() {
                   <label className="text-xs font-bold text-slate-400 uppercase ml-1">Category</label>
                   <select required value={formData.inventory_type_id} onChange={(e) => setFormData({ ...formData, inventory_type_id: e.target.value })}
                     className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none">
-                    {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
               </div>

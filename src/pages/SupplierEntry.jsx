@@ -11,7 +11,7 @@ export default function SupplierEntry() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [unitPrice, setUnitPrice] = useState("");
-  const { brands, types } = useStore();
+  const { brands, inventoryTypes } = useStore();
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
@@ -23,7 +23,6 @@ export default function SupplierEntry() {
     };
     load();
   }, [fetchInventory, inventory.length]);
-
 
   const totalAmount = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
@@ -95,7 +94,7 @@ export default function SupplierEntry() {
                 className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose a type...</option>
-                {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                {inventoryTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
             <div>

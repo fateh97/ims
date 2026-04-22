@@ -151,7 +151,7 @@ export const useStore = create((set, get) => ({
     inventoryTypes: [],
     fetchInventoryTypes: async () => {
         const res = await axios.get('http://127.0.0.1:8000/api/inventory-types');
-        set({ types: res.data });
+        set({ inventoryTypes: res.data });
     },
     addInventoryType: async (name, accessory) => {
         try {

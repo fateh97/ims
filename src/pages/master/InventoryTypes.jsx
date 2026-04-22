@@ -4,7 +4,7 @@ import { Layers, Plus, Loader2, Package, Edit3, X } from 'lucide-react';
 
 export default function InventoryTypesPage() {
 
-  const { types, fetchInventoryTypes, addInventoryType } = useStore();
+  const { inventoryTypes, fetchInventoryTypes, addInventoryType } = useStore();
   const [typeName, setTypeName] = useState("");
   const [prefix, setPrefix] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -127,8 +127,8 @@ export default function InventoryTypesPage() {
         </form>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {types.length > 0 ? (
-            types.map(type => (
+          {inventoryTypes.length > 0 ? (
+            inventoryTypes.map(type => (
               <div key={type.id} className="group p-5 bg-white border border-slate-100 rounded-2xl flex items-center gap-4 hover:border-blue-300 hover:shadow-md transition-all">
                 <div className="p-2 bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 rounded-lg transition-colors">
                   <Package size={18} />
