@@ -64,13 +64,10 @@ export const useStore = create((set, get) => ({
     customerInvoice: async (data) => {
         try {
             const token = localStorage.getItem('auth_token');
-
-            const isFormData = data instanceof FormData;
-
             const response = await axios.post('http://127.0.0.1:8000/api/customer-invoice', data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
+                    'Content-Type': 'application/json'
                 }
             });
 
