@@ -49,8 +49,9 @@ export default function UserManagement() {
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">System Role</label>
                         <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="staff">Staff (Standard Access)</option>
-                            <option value="admin">Admin (Full Control)</option>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                            <option value="ceo">CEO</option>
                         </select>
                     </div>
                     <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
