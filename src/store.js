@@ -13,8 +13,6 @@ export const useStore = create((set, get) => ({
         set({ user: null });
     },
 
-    // --- FETCH ACTIONS ---
-    // This is the line you needed! It fetches the latest data from MySQL
     fetchInventory: async () => {
         try {
             const token = localStorage.getItem('auth_token');

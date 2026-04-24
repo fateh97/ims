@@ -32,7 +32,7 @@ export default function ActivityLog() {
           <thead className="bg-slate-50 border-b">
             <tr>
               <th className="px-6 py-4">Ref #</th>
-              <th className="px-6 py-4">Product</th>
+              <th className="px-6 py-4">Product / Services</th>
               <th className="px-6 py-4">Type</th>
               <th className="px-6 py-4 text-center">Actions</th>
             </tr>
@@ -41,7 +41,23 @@ export default function ActivityLog() {
             {logs && logs.length > 0 ? (logs.map((log) => (
               <tr key={log.id}>
                 <td className="px-6 py-4 font-mono text-xs">{log.ref}</td>
-                <td className="px-6 py-4 font-medium">{log.product?.name}</td>
+                <td className="px-6 py-4 font-medium">
+                  {log.product ? (
+                    <>
+                      {log.product.name}
+                      {/* If it's a product, check if it's an accessory */}
+                      {Number(log.product.inventory_types?.accessory) === 1 && (
+                        <span className="ml-1 text-slate-400 font-normal text-md">(Accessory)</span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* If there is no product, it's a manual service entry */}
+                      {log.service_name}
+                      <span className="ml-1 text-slate-400 font-normal text-md">(Service)</span>
+                    </>
+                  )}
+                </td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
                     }`}>

@@ -90,7 +90,6 @@ export default function UserManagement() {
                             <option value="staff">Staff</option>
                             <option value="admin">Admin</option>
                             <option value="ceo">CEO</option>
-                            <option value="superadmin">Superadmin</option>
                         </select>
                     </div>
                     <button type="submit" disabled={isSubmitting} className={`w-full py-4 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${editingId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-900 hover:bg-slate-800'}`}>
