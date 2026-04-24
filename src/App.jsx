@@ -27,14 +27,15 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <AppLayout user={user} logout={logout} isExiting={isExiting} setIsExiting={setIsExiting} />
+      <AppLayout user={user} logout={logout} />
     </BrowserRouter>
   );
 }
 
-function AppLayout({ user, logout, isExiting, setIsExiting }) {
+function AppLayout({ user, logout }) {
   const location = useLocation();
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
   const role = user?.role?.toLowerCase();
 
@@ -51,7 +52,10 @@ function AppLayout({ user, logout, isExiting, setIsExiting }) {
 
   const handleLogout = () => {
     setIsExiting(true);
-    setTimeout(() => logout(), 800);
+    setTimeout(() => {
+      logout();
+      setIsExiting(false); 
+    }, 800);
   };
 
   return (
@@ -127,7 +131,13 @@ function AppLayout({ user, logout, isExiting, setIsExiting }) {
           </nav>
         </div>
 
-        <button onClick={handleLogout} disabled={isExiting} className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl font-bold transition-all duration-500 ${isExiting ? 'bg-red-600 opacity-50' : 'bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white'}`}>
+        <button 
+          onClick={handleLogout} 
+          disabled={isExiting} 
+          className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl font-bold transition-all duration-500 ${
+              isExiting ? 'bg-red-600 opacity-50' : 'bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white'
+            }`}
+          >
           {isExiting ? <Loader2 className="animate-spin" size={20} /> : <LogOut size={20} />}
           <span>{isExiting ? 'Closing...' : 'Logout'}</span>
         </button>

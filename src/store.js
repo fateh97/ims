@@ -135,6 +135,22 @@ export const useStore = create((set, get) => ({
         }
     },
 
+    updateUser: async (id, data) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await axios.put(`http://127.0.0.1:8000/api/users/${id}`, data, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            // Refresh local user list
+            await get().fetchUsers();
+            return true;
+        } catch (error) {
+            console.error("Update failed:", error.response?.data || error.message);
+            return false;
+        }
+    },
+
     brands: [],
     fetchBrands: async () => {
         const res = await axios.get('http://127.0.0.1:8000/api/brands');
