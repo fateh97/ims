@@ -6,6 +6,7 @@ import {
   LayoutDashboard, FileText, Package, ClipboardList, ChevronDown, ChevronRight,
   ShoppingCart, Truck, LogOut, Loader2, User, Tag, Layers
 } from 'lucide-react';
+import axios from 'axios';
 
 import Dashboard from './pages/Dashboard';
 import LogPage from './pages/LogPage';
@@ -18,10 +19,31 @@ import InventoryTypes from './pages/master/InventoryTypes';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
 
+const token = localStorage.getItem('auth_token');
+if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
 export default function App() {
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // If token is expired, clear local storage and redirect
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+          window.location.href = '/'; // Hard redirect to login
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   if (!user) return <Login />;
 

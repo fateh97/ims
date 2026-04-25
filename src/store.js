@@ -6,10 +6,14 @@ export const useStore = create((set, get) => ({
     inventory: [],
     logs: [],
 
-    // --- AUTH ACTIONS ---
-    login: (userData) => set({ user: userData }),
+    login: (userData) => {
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        set({ user: userData });
+    },
+    
     logout: () => {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
         set({ user: null });
     },
 
