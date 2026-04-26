@@ -11,7 +11,7 @@ export default function InventoryTypesPage() {
   const [isAccessory, setIsAccessory] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingType, setEditingType] = useState(null);
-  const [editData, setEditData] = useState({ name: "", accessory: false });
+  const [editData, setEditData] = useState({ name: "", prefix: "", accessory: false });
   const { updateInventoryType } = useStore();
 
   useEffect(() => { fetchInventoryTypes(); }, []);
@@ -20,6 +20,7 @@ export default function InventoryTypesPage() {
     setEditingType(type);
     setEditData({
       name: type.name,
+      prefix: type.prefix,
       accessory: Boolean(type.accessory) // Ensure it's a boolean
     });
     setIsEditOpen(true);
@@ -30,9 +31,10 @@ export default function InventoryTypesPage() {
     if (!typeName.trim()) return;
     //console.log("Sending to backend:", { name: typeName, accessory: isAccessory });
     setIsSaving(true);
-    const success = await addInventoryType(typeName, isAccessory);
+    const success = await addInventoryType(typeName, prefix, isAccessory);
     if (success) {
       setTypeName("");
+      setPrefix("");
       setIsAccessory(false);
     }
     setIsSaving(false);
@@ -41,7 +43,6 @@ export default function InventoryTypesPage() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     const success = await updateInventoryType(editingType.id, editData);
-    console.log("Sending to backend:", { updateInventoryType: { id: editingType.id, ...editData } });
     if (success) {
       setIsEditOpen(false);
       setEditingType(null);
@@ -71,6 +72,15 @@ export default function InventoryTypesPage() {
               onChange={(e) => setTypeName(e.target.value)}
               className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               placeholder="New Category Name (e.g. Grip)..."
+            />
+
+            <input
+              required
+              maxLength="5"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value.toUpperCase())} // Auto-uppercase
+              className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-mono text-center"
+              placeholder="Prefix (BALL)"
             />
 
             <button
@@ -157,6 +167,14 @@ export default function InventoryTypesPage() {
                   <input required value={editData.name}
                     onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Prefix (Short Code)</label>
+                  <input required maxLength="5" value={editData.prefix}
+                    onChange={(e) => setEditData({ ...editData, prefix: e.target.value.toUpperCase() })}
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                   />
                 </div>
 
