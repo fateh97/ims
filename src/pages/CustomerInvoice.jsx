@@ -40,6 +40,7 @@ export default function CustomerInvoice() {
   });
 
   const addItemToCart = (id, qty, mode) => {
+    setLastInvoice(null);
     if (mode === 'service') {
       if (!serviceDesc || !servicePrice) return;
       setCart([...cart, { 
@@ -70,7 +71,10 @@ export default function CustomerInvoice() {
     }
   };
 
-  const removeFromCart = (index) => setCart(cart.filter((_, i) => i !== index));
+  const removeFromCart = (index) => {
+      setLastInvoice(null); 
+      setCart(cart.filter((_, i) => i !== index));
+  };
 
   const grandTotal = cart.reduce((sum, i) => sum + (i.qty * i.price), 0);
 
