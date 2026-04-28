@@ -129,7 +129,10 @@ export default function InventoryPage() {
     const formData = new FormData();
     formData.append('added_stock', restockData.qty);
     formData.append('supplier_price', restockData.cost);
-    formData.append('attachment', restockData.file);
+    
+    if (restockData.file) {
+        formData.append('attachment', restockData.file);
+    }
 
     try {
       const token = localStorage.getItem('auth_token');
@@ -140,11 +143,9 @@ export default function InventoryPage() {
         }
       });
 
-      // Update local inventory state
       const updated = inventory.map(item => item.id === selectedProduct.id ? res.data : item);
       setInventory(updated);
 
-      // Refresh logs to show the new attachment immediately
       fetchLogs();
 
       setIsRestockOpen(false);
@@ -452,7 +453,7 @@ export default function InventoryPage() {
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase">Upload Receipt</label>
                 <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
-                  <input required type="file"
+                  <input type="file"
                     onChange={(e) => setRestockData({ ...restockData, file: e.target.files[0] })}
                     className="absolute inset-0 opacity-0 cursor-pointer" />
                   <div className="text-center">
