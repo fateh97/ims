@@ -13,10 +13,10 @@ export default function ActivityLog() {
     // Format the data to match our receipt structure
     setPrintData({
       ref: log.ref,
-      productName: log.product?.name,
+      productName: log.product?.name || log.service_name,
       qty: log.qty,
-      price: log.product?.price,
-      total: log.qty * log.product?.price,
+      price: log.product?.price || log.service_price || 0,
+      total: log.qty * (log.product?.price || log.service_price || 0),
       date: new Date(log.created_at).toLocaleString([], {
         year: 'numeric', month: 'numeric', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
