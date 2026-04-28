@@ -21,7 +21,7 @@ import Login from './pages/Login';
 
 const token = localStorage.getItem('auth_token');
 if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 }
 
 export default function App() {
@@ -65,7 +65,7 @@ function AppLayout({ user, logout }) {
   const isSuper = role === 'superadmin';
   const isAdmin = role === 'admin' || isSuper;
   const isStaff = role === 'staff' || isSuper;
-  const isBoss = role === 'ceo' || isSuper;
+  const isBoss = role === 'finance' || isSuper;
 
   useEffect(() => {
     const isMasterPath = location.pathname === '/brands' || location.pathname === '/inventory-types';
@@ -76,7 +76,7 @@ function AppLayout({ user, logout }) {
     setIsExiting(true);
     setTimeout(() => {
       logout();
-      setIsExiting(false); 
+      setIsExiting(false);
     }, 800);
   };
 
@@ -153,13 +153,12 @@ function AppLayout({ user, logout }) {
           </nav>
         </div>
 
-        <button 
-          onClick={handleLogout} 
-          disabled={isExiting} 
-          className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl font-bold transition-all duration-500 ${
-              isExiting ? 'bg-red-600 opacity-50' : 'bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white'
+        <button
+          onClick={handleLogout}
+          disabled={isExiting}
+          className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl font-bold transition-all duration-500 ${isExiting ? 'bg-red-600 opacity-50' : 'bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white'
             }`}
-          >
+        >
           {isExiting ? <Loader2 className="animate-spin" size={20} /> : <LogOut size={20} />}
           <span>{isExiting ? 'Closing...' : 'Logout'}</span>
         </button>
