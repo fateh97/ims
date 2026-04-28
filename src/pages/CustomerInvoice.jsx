@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import logoImg from '../assets/wbm-logo.jpeg';
-import { 
-  ShoppingCart, X, Plus, Trash2, Printer, 
+import {
+  ShoppingCart, X, Plus, Trash2, Printer,
   Loader2, ArrowUpRight, Wrench, Package, Info, Tag, Layers
 } from 'lucide-react';
 
@@ -15,7 +15,7 @@ export default function CustomerInvoice() {
   // Selection States
   const [selectedProductId, setSelectedProductId] = useState("");
   const [productQty, setProductQty] = useState("");
-  
+
   const [selectedAccessoryId, setSelectedAccessoryId] = useState("");
   const [accessoryQty, setAccessoryQty] = useState("");
 
@@ -30,7 +30,7 @@ export default function CustomerInvoice() {
   }, [fetchInventory]);
 
   const mainProducts = inventory.filter(item => {
-    if (!item.inventory_types) return true; 
+    if (!item.inventory_types) return true;
     return Number(item.inventory_types.accessory) === 0;
   });
 
@@ -43,27 +43,28 @@ export default function CustomerInvoice() {
     setLastInvoice(null);
     if (mode === 'service') {
       if (!serviceDesc || !servicePrice) return;
-      setCart([...cart, { 
-        id: `svc-${Date.now()}`, 
-        name: serviceDesc, 
-        qty: 1, 
-        price: Number(servicePrice), 
+      setCart([...cart, {
+        id: `svc-${Date.now()}`,
+        name: serviceDesc,
+        qty: 1,
+        price: Number(servicePrice),
         type: 'service',
-        isService: true 
+        isService: true
       }]);
       setServiceDesc(""); setServicePrice("");
     } else {
       const item = inventory.find(p => p.id === Number(id));
-      if (!item || qty <= 0) return;
-      if (item.stock < qty) return alert(`Insufficient stock for ${item.name}!`);
+      const requestedQty = Number(qty);
+      if (!item || requestedQty <= 0) return;
+      if (item.stock < requestedQty) return alert(`Cannot exceed more than stock for ${item.name}!`);
 
-      setCart([...cart, { 
-        id: item.id, 
-        name: item.name, 
-        qty: Number(qty), 
-        price: Number(item.price), 
+      setCart([...cart, {
+        id: item.id,
+        name: item.name,
+        qty: requestedQty,
+        price: Number(item.price),
         type: mode, // 'product' or 'accessory'
-        isService: false 
+        isService: false
       }]);
 
       if (mode === 'product') { setSelectedProductId(""); setProductQty(""); }
@@ -72,8 +73,8 @@ export default function CustomerInvoice() {
   };
 
   const removeFromCart = (index) => {
-      setLastInvoice(null); 
-      setCart(cart.filter((_, i) => i !== index));
+    setLastInvoice(null);
+    setCart(cart.filter((_, i) => i !== index));
   };
 
   const grandTotal = cart.reduce((sum, i) => sum + (i.qty * i.price), 0);
@@ -91,11 +92,11 @@ export default function CustomerInvoice() {
 
     const result = await customerInvoice(payload);
     if (result) {
-      setLastInvoice({ 
-        ref: result.ref, 
-        items: [...cart], 
-        grandTotal, 
-        date: new Date().toLocaleString() 
+      setLastInvoice({
+        ref: result.ref,
+        items: [...cart],
+        grandTotal,
+        date: new Date().toLocaleString()
       });
       setCart([]);
     }
@@ -106,10 +107,10 @@ export default function CustomerInvoice() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
-      
+
       {/* 1. SELECTION GRID */}
       <div className="print:hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {/* Main Product Selection */}
         <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
           <h3 className="text-xs font-black text-rose-500 uppercase mb-4 flex items-center gap-2 tracking-widest">
@@ -176,17 +177,16 @@ export default function CustomerInvoice() {
             {cart.map((item, idx) => (
               <div key={idx} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl group">
                 <div className="flex items-center gap-4">
-                  <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${
-                    item.type === 'product' ? 'bg-rose-500/20 text-rose-400' : 
+                  <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${item.type === 'product' ? 'bg-rose-500/20 text-rose-400' :
                     item.type === 'accessory' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'
-                  }`}>
+                    }`}>
                     {item.type}
                   </span>
                   <p className="font-bold text-slate-200">{item.name} <span className="text-slate-500 text-xs ml-2">x{item.qty}</span></p>
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="font-mono font-bold text-white text-lg">RM{(item.qty * item.price).toFixed(2)}</span>
-                  <button onClick={() => removeFromCart(idx)} className="text-slate-600 group-hover:text-rose-500 transition-colors"><Trash2 size={18}/></button>
+                  <button onClick={() => removeFromCart(idx)} className="text-slate-600 group-hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
                 </div>
               </div>
             ))}
@@ -225,9 +225,8 @@ export default function CustomerInvoice() {
               if (rows.length === 0) return null;
               return (
                 <div key={type} className="space-y-3">
-                  <h4 className={`text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ${
-                    type === 'product' ? 'text-rose-500' : type === 'accessory' ? 'text-amber-500' : 'text-blue-500'
-                  }`}>
+                  <h4 className={`text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ${type === 'product' ? 'text-rose-500' : type === 'accessory' ? 'text-amber-500' : 'text-blue-500'
+                    }`}>
                     <div className={`h-1.5 w-1.5 rounded-full ${type === 'product' ? 'bg-rose-500' : type === 'accessory' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                     {type}s
                   </h4>
