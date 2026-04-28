@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function InventoryPage() {
   const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, inventoryTypes } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
-  const API_BASE_URL = "http://127.0.0.1:8000";
+  const API_BASE_URL = "https://wbmproshop.com/api/public";
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { brands } = useStore();
@@ -64,7 +64,7 @@ export default function InventoryPage() {
         supplier_price: parseFloat(newSupplierPrice)
       };
 
-      const response = await axios.post('http://127.0.0.1:8000/api/add-products', productData, {
+      const response = await axios.post('https://wbmproshop.com/api/public/api/add-products', productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -96,7 +96,7 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await axios.put(`http://127.0.0.1:8000/api/update-product/${editingProduct.id}`, formData, {
+      const response = await axios.put(`https://wbmproshop.com/api/public/api/update-product/${editingProduct.id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -113,7 +113,7 @@ export default function InventoryPage() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       const token = localStorage.getItem('auth_token');
-      await axios.delete(`http://127.0.0.1:8000/api/delete-product/${id}`, {
+      await axios.delete(`https://wbmproshop.com/api/public/api/delete-product/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const updatedInventory = inventory.filter(item => item.id !== id);
@@ -129,9 +129,9 @@ export default function InventoryPage() {
     const formData = new FormData();
     formData.append('added_stock', restockData.qty);
     formData.append('supplier_price', restockData.cost);
-    
+
     if (restockData.file) {
-        formData.append('attachment', restockData.file);
+      formData.append('attachment', restockData.file);
     }
 
     try {
