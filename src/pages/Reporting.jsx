@@ -22,7 +22,13 @@ export default function ReportsPage() {
 
   const moneyOut = logs
     .filter(l => l.type === 'OUT')
-    .reduce((sum, l) => sum + (l.qty * (l.product?.price || 0)), 0);
+    .reduce((sum, l) => {
+      const productTotal = Number(l.qty) * (Number(l.product?.price) || 0);
+
+      const serviceTotal = Number(l.service_price) || 0;
+
+      return sum + productTotal + serviceTotal;
+    }, 0);
 
   const handleExport = () => {
     // Direct link to your Laravel API endpoint
@@ -32,8 +38,8 @@ export default function ReportsPage() {
   const chartData = logs.reduce((acc, log) => {
     const dateObj = new Date(log.created_at);
 
-    if(isNaN(dateObj.getTime())) return acc;
-    const month = dateObj.toLocaleDateString('en-MY', { month: 'short', year:'numeric' });
+    if (isNaN(dateObj.getTime())) return acc;
+    const month = dateObj.toLocaleDateString('en-MY', { month: 'short', year: 'numeric' });
     const existing = acc.find(item => item.month === month);
 
     const amount = log.type === 'IN'
@@ -52,7 +58,7 @@ export default function ReportsPage() {
     }
     return acc;
   }, []).sort((a, b) => new Date(a.month) - new Date(b.month)) // Ensure months are in order
-  .slice(-12);
+    .slice(-12);
 
   const hasChartData = chartData.length > 0;
   return (
@@ -121,7 +127,7 @@ export default function ReportsPage() {
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="top" align="right" iconType="circle" height={36} />
-                
+
                 {/* Earned Line (Green) */}
                 <Line
                   type="monotone"
@@ -131,7 +137,7 @@ export default function ReportsPage() {
                   dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                 />
-                
+
                 {/* Spent Line (Red) */}
                 <Line
                   type="monotone"
