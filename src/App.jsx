@@ -96,7 +96,7 @@ function AppLayout({ user, logout }) {
             </Link>
 
             {/* Inventory Management: Super, Admin, Staff */}
-            {(isAdmin || isStaff) && (
+            {(isAdmin || isStaff || isBoss) && (
               <Link to="/inventory" className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition-all text-slate-300 hover:text-blue-400 font-medium">
                 <Package size={18} /> Inventory
               </Link>
@@ -187,7 +187,7 @@ function AppLayout({ user, logout }) {
             <Route path="/" element={<Dashboard />} />
 
             {/* Protected Routes */}
-            <Route path="/inventory" element={(isAdmin || isStaff) ? <InventoryPage /> : <Navigate to="/" />} />
+            <Route path="/inventory" element={(isAdmin || isStaff || isBoss) ? <InventoryPage /> : <Navigate to="/" />} />
             <Route path="/customer-sale" element={isStaff ? <CustomerInvoice /> : <Navigate to="/" />} />
             <Route path="/supplier-restock" element={isStaff ? <SupplierEntry /> : <Navigate to="/" />} />
             <Route path="/logs" element={(isAdmin || isBoss) ? <LogPage /> : <Navigate to="/" />} />
