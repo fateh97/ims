@@ -25,21 +25,17 @@ export default function Login() {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password });
       const { token, user } = response.data;
-      localStorage.setItem('auth_token', token);
 
-      // 1. Save Token
-      localStorage.setItem('auth_token', token);
-      // 2. Save User Object for Persistence
-      localStorage.setItem('user_data', JSON.stringify(user)); 
-      // 3. Set Axios Header for immediate use
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      login(user);
+      // Use the store's login action to handle all the saving logic
+      login(user, token); 
+      
+      // Optional: Add a small delay or redirect here
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   const handleReset = async (e) => {
     e.preventDefault();

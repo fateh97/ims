@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function InventoryPage() {
   const { inventory, logs, addProduct, fetchInventory, fetchLogs, setInventory, inventoryTypes } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
-  const API_BASE_URL = "https://wbmproshop.com/api/public";
+  const API_BASE_URL = "http://127.0.0.1:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { brands } = useStore();
@@ -16,11 +16,12 @@ export default function InventoryPage() {
   const [isRestockOpen, setIsRestockOpen] = useState(false);
   const [restockData, setRestockData] = useState({ qty: "", cost: "", file: null });
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const user = useStore((state) => state.user);
 
   //Modals State
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({ name: "", brand: "", price: "", stock: "", supplier_price: "" });
+  const [formData, setFormData] = useState({ name: "", brand: "", price: "", stock: "", supplier_price: "", created_by: "" });
 
   // Form State
   const [newName, setNewName] = useState("");
@@ -29,6 +30,7 @@ export default function InventoryPage() {
   const [newPrice, setNewPrice] = useState("");
   const [newSupplierPrice, setNewSupplierPrice] = useState("");
   const [newStock, setNewStock] = useState("");
+  const [newCreatedBy, setNewCreatedBy] = useState("");
 
   // FETCH PRODUCTS FROM LARAVEL
   useEffect(() => {
@@ -55,16 +57,19 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('auth_token');
+      const userid = user?.id;
+      console.log(userid);
       const productData = {
         name: newName,
         brand_id: selectedBrand, // Use the ID from your dropdown
         inventory_type_id: selectedInventoryType, // Use the ID from your dropdown
         price: parseFloat(newPrice),
         stock: parseInt(newStock),
-        supplier_price: parseFloat(newSupplierPrice)
+        supplier_price: parseFloat(newSupplierPrice),
+        created_by: userid
       };
-
-      const response = await axios.post('https://wbmproshop.com/api/public/api/add-products', productData, {
+      
+      const response = await axios.post('http://127.0.0.1:8000/api/add-products', productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -72,7 +77,7 @@ export default function InventoryPage() {
       setIsOpen(false);
       // Reset all fields
       setNewName(""); setSelectedBrand(""); setSelectedInventoryType("");
-      setNewPrice(""); setNewStock("");
+      setNewPrice(""); setNewStock(""); setNewCreatedBy("");
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.message || "Failed to add product. Please try again.");
@@ -87,7 +92,8 @@ export default function InventoryPage() {
       inventory_type_id: product.inventory_type_id,
       price: product.price,
       stock: product.stock,
-      supplier_price: product.supplier_price
+      supplier_price: product.supplier_price,
+      created_by: user?.id
     });
     setIsEditOpen(true);
   };
@@ -96,7 +102,7 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await axios.put(`https://wbmproshop.com/api/public/api/update-product/${editingProduct.id}`, formData, {
+      const response = await axios.put(`http://127.0.0.1:8000/api/update-product/${editingProduct.id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -113,7 +119,7 @@ export default function InventoryPage() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       const token = localStorage.getItem('auth_token');
-      await axios.delete(`https://wbmproshop.com/api/public/api/delete-product/${id}`, {
+      await axios.delete(`http://127.0.0.1:8000/api/delete-product/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const updatedInventory = inventory.filter(item => item.id !== id);

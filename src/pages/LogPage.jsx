@@ -31,10 +31,11 @@ export default function ActivityLog() {
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b">
             <tr>
-              <th className="px-6 py-4">Ref #</th>
+              <th className="px-6 py-4">Reference</th>
               <th className="px-6 py-4">Product / Services</th>
               <th className="px-6 py-4">Type</th>
-              <th className="px-6 py-4 text-center">Actions</th>
+              <th className="px-6 py-4 text-center">Staff</th>
+              <th className="px-6 py-4 text-center">Attachment</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -42,11 +43,11 @@ export default function ActivityLog() {
               <tr key={log.id}>
                 <td className="px-6 py-4 font-mono text-xs">{log.ref}</td>
                 <td className="px-6 py-4 font-medium">
-                  {log.product ? (
+                  {log.product_name ? (
                     <>
-                      {log.product.name}
+                      {log.product_name}
                       {/* If it's a product, check if it's an accessory */}
-                      {Number(log.product.inventory_types?.accessory) === 1 && (
+                      {Number(log.accessory) === 1 && (
                         <span className="ml-1 text-slate-400 font-normal text-md">(Accessory)</span>
                       )}
                     </>
@@ -63,6 +64,13 @@ export default function ActivityLog() {
                     }`}>
                     {log.type}
                   </span>
+                </td>
+                <td>
+                  <div className="flex items-center gap-2 justify-center">
+                    <div className="h-5 w-20 rounded-full bg-slate-900 flex items-center justify-center text-white text-[10px] font-bold">
+                      {log.users?.name ? log.users.name.toUpperCase() : '?'}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-center space-x-2">
                   {/* SHOW PRINT BUTTON ONLY FOR 'OUT' (SALES) */}
@@ -88,7 +96,7 @@ export default function ActivityLog() {
             ))
             ) : (
               <tr>
-                <td colSpan="4" className="px-6 py-20 text-center">
+                <td colSpan="5" className="px-6 py-20 text-center">
                   <div className="flex flex-col items-center gap-2 opacity-40">
                     <FileText size={48} className="text-slate-300" />
                     <p className="text-slate-500 font-medium">No activity logs found yet.</p>

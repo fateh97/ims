@@ -15,15 +15,16 @@ export default function ReportsPage() {
     loadData();
   }, [fetchLogs]);
 
+  console.log("Logs for Reporting Page:", logs);
   // Calculate Financials
   const moneyIn = logs
     .filter(l => l.type === 'IN')
-    .reduce((sum, l) => sum + (Number(l.qty) * (Number(l.product?.supplier_price) || 0)), 0);
+    .reduce((sum, l) => sum + (Number(l.qty) * (Number(l.supplier_price) || 0)), 0);
 
   const moneyOut = logs
     .filter(l => l.type === 'OUT')
     .reduce((sum, l) => {
-      const productTotal = Number(l.qty) * (Number(l.product?.price) || 0);
+      const productTotal = Number(l.qty) * (Number(l.price) || 0);
 
       const serviceTotal = Number(l.service_price) || 0;
 
@@ -43,8 +44,8 @@ export default function ReportsPage() {
     const existing = acc.find(item => item.month === month);
 
     const amount = log.type === 'IN'
-      ? (Number(log.qty) * (Number(log.product?.supplier_price) || 0))
-      : (Number(log.qty) * (Number(log.product?.price) || 0));
+      ? (Number(log.qty) * (Number(log.supplier_price) || 0))
+      : (Number(log.qty) * (Number(log.price) || 0));
 
     if (existing) {
       if (log.type === 'IN') existing.Spent += amount;

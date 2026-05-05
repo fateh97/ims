@@ -3,18 +3,20 @@ import axios from 'axios';
 
 export const useStore = create((set, get) => ({
     user: JSON.parse(localStorage.getItem('user_data')) || null,
+    token: localStorage.getItem('auth_token') || null,
     inventory: [],
     logs: [],
 
     login: (userData) => {
         localStorage.setItem('user_data', JSON.stringify(userData));
-        set({ user: userData });
+        localStorage.setItem('auth_token', userData.token);
+        set({ user: userData, token: userData.token });
     },
     
     logout: () => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
-        set({ user: null });
+        set({ user: null, token: null });
     },
 
     fetchInventory: async () => {
