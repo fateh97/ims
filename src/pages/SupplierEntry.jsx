@@ -15,6 +15,7 @@ export default function SupplierEntry() {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
+  const user = useStore((state) => state.user);
 
   useEffect(() => {
     const load = async () => {
@@ -30,8 +31,7 @@ export default function SupplierEntry() {
     e.preventDefault();
     setIsProcessing(true);
 
-    const invRef = `SUPP-${Math.floor(1000 + Math.random() * 9000)}`;
-
+    const userID = user?.id;
     // Create the bundle
     const data = new FormData();
     data.append('product_name', productSearch); // Send text name
@@ -40,7 +40,7 @@ export default function SupplierEntry() {
     data.append('type', 'IN');
     data.append('qty', quantity);
     data.append('unit_price', unitPrice);
-    data.append('ref', invRef);
+    data.append('created_by', userID);
 
     // Only append if a file was actually selected
     if (attachment instanceof File) {
@@ -58,6 +58,7 @@ export default function SupplierEntry() {
       setAttachment(null);
       setTimeout(() => setSuccess(false), 5000);
     } else {
+      console.log(result);
       alert("Server error. Please check your Laravel logs.");
     }
 

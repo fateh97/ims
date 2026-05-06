@@ -31,7 +31,7 @@ export default function ActivityLog() {
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b">
             <tr>
-              <th className="px-6 py-4">Reference</th>
+              <th className="px-6 py-4">Summary</th>
               <th className="px-6 py-4">Product / Services</th>
               <th className="px-6 py-4">Type</th>
               <th className="px-6 py-4 text-center">Staff</th>
@@ -41,7 +41,7 @@ export default function ActivityLog() {
           <tbody className="divide-y divide-slate-100">
             {logs && logs.length > 0 ? (logs.map((log) => (
               <tr key={log.id}>
-                <td className="px-6 py-4 font-mono text-xs">{log.ref}</td>
+                <td className="px-6 py-4 font-medium">{log.ref}</td>
                 <td className="px-6 py-4 font-medium">
                   {log.product_name ? (
                     <>

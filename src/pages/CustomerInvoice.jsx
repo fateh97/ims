@@ -8,7 +8,7 @@ import {
 
 export default function CustomerInvoice() {
   const { inventory, fetchInventory, customerInvoice } = useStore();
-
+  const user = useStore((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
 
@@ -49,7 +49,7 @@ export default function CustomerInvoice() {
         qty: 1,
         price: Number(servicePrice),
         type: 'service',
-        isService: true
+        isService: true,
       }]);
       setServiceDesc(""); setServicePrice("");
     } else {
@@ -64,7 +64,7 @@ export default function CustomerInvoice() {
         qty: requestedQty,
         price: Number(item.price),
         type: mode, // 'product' or 'accessory'
-        isService: false
+        isService: false,
       }]);
 
       if (mode === 'product') { setSelectedProductId(""); setProductQty(""); }
@@ -81,13 +81,15 @@ export default function CustomerInvoice() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const userID = user?.id;
     if (cart.length === 0) return;
     setIsProcessing(true);
 
     const payload = {
       items: cart.filter(i => !i.isService).map(i => ({ product_id: i.id, qty: i.qty })),
       maintenance: cart.filter(i => i.isService).map(i => ({ desc: i.name, price: i.price })),
-      type: 'OUT'
+      type: 'OUT',
+      created_by: userID
     };
 
     const result = await customerInvoice(payload);
@@ -96,7 +98,7 @@ export default function CustomerInvoice() {
         ref: result.ref,
         items: [...cart],
         grandTotal,
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
       });
       setCart([]);
     }

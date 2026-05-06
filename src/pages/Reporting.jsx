@@ -18,8 +18,18 @@ export default function ReportsPage() {
   console.log("Logs for Reporting Page:", logs);
   // Calculate Financials
   const moneyIn = logs
-    .filter(l => l.type === 'IN')
-    .reduce((sum, l) => sum + (Number(l.qty) * (Number(l.supplier_price) || 0)), 0);
+    .filter(l => l.type === 'IN' || l.type === 'DELETE')
+    .reduce((sum, l) => {
+      const logValue = Number(l.qty || 0) * (Number(l.supplier_price) || 0);
+
+      if (l.type === 'IN') {
+        return sum + logValue;
+      } else if (l.type === 'DELETE') {
+        return sum - logValue;
+      }
+
+      return sum;
+    }, 0);
 
   const moneyOut = logs
     .filter(l => l.type === 'OUT')

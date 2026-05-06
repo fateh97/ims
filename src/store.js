@@ -12,7 +12,7 @@ export const useStore = create((set, get) => ({
         localStorage.setItem('auth_token', userData.token);
         set({ user: userData, token: userData.token });
     },
-    
+
     logout: () => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
@@ -89,34 +89,34 @@ export const useStore = create((set, get) => ({
         inventory: [...state.inventory, newProduct]
     })),
 
-    restockProduct: async (id, restockData) => {
-        try {
-            const token = localStorage.getItem('auth_token');
+    // restockProduct: async (id, restockData) => {
+    //     try {
+    //         const token = localStorage.getItem('auth_token');
 
-            // Create FormData for file upload
-            const formData = new FormData();
-            formData.append('added_stock', restockData.qty);
-            formData.append('supplier_price', restockData.cost);
-            formData.append('attachment', restockData.file);
+    //         // Create FormData for file upload
+    //         const formData = new FormData();
+    //         formData.append('added_stock', restockData.qty);
+    //         formData.append('supplier_price', restockData.cost);
+    //         formData.append('attachment', restockData.file);
 
-            const res = await axios.post(`http://127.0.0.1:8000/api/restock-product/${id}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+    //         const res = await axios.post(`http://127.0.0.1:8000/api/restock-product/${id}`, formData, {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         });
 
-            // Update the local inventory state immediately
-            set((state) => ({
-                inventory: state.inventory.map(item => item.id === id ? res.data : item)
-            }));
+    //         // Update the local inventory state immediately
+    //         set((state) => ({
+    //             inventory: state.inventory.map(item => item.id === id ? res.data : item)
+    //         }));
 
-            return { success: true };
-        } catch (error) {
-            console.error("Restock failed:", error);
-            return { success: false, error: error.response?.data?.message };
-        }
-    },
+    //         return { success: true };
+    //     } catch (error) {
+    //         console.error("Restock failed:", error);
+    //         return { success: false, error: error.response?.data?.message };
+    //     }
+    // },
 
     setInventory: (items) => set({ inventory: items }),
 
@@ -145,7 +145,7 @@ export const useStore = create((set, get) => ({
             const response = await axios.put(`http://127.0.0.1:8000/api/users/${id}`, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             // Refresh local user list
             await get().fetchUsers();
             return true;

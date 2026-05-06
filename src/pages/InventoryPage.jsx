@@ -14,7 +14,7 @@ export default function InventoryPage() {
   const [selectedInventoryType, setSelectedInventoryType] = useState("");
   const [itemName, setItemName] = useState("");
   const [isRestockOpen, setIsRestockOpen] = useState(false);
-  const [restockData, setRestockData] = useState({ qty: "", cost: "", file: null });
+  const [restockData, setRestockData] = useState({ qty: "", cost: "", file: null, created_by: "" });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const user = useStore((state) => state.user);
 
@@ -58,7 +58,6 @@ export default function InventoryPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const userid = user?.id;
-      console.log(userid);
       const productData = {
         name: newName,
         brand_id: selectedBrand, // Use the ID from your dropdown
@@ -68,7 +67,7 @@ export default function InventoryPage() {
         supplier_price: parseFloat(newSupplierPrice),
         created_by: userid
       };
-      
+
       const response = await axios.post('http://127.0.0.1:8000/api/add-products', productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -119,12 +118,16 @@ export default function InventoryPage() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       const token = localStorage.getItem('auth_token');
+      const userid = user?.id;
       await axios.delete(`http://127.0.0.1:8000/api/delete-product/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        data: { created_by: userid }
       });
       const updatedInventory = inventory.filter(item => item.id !== id);
       setInventory(updatedInventory); // Refresh inventory after deletion
     } catch (error) {
+      const updatedInventory = inventory.filter(item => item.id !== id);
+      console.log(error);
       console.error("Error deleting product:", error);
       alert("Failed to delete product. Please try again.");
     }
@@ -132,9 +135,11 @@ export default function InventoryPage() {
 
   const handleRestock = async (e) => {
     e.preventDefault();
+    const userid = user?.id;
     const formData = new FormData();
     formData.append('added_stock', restockData.qty);
     formData.append('supplier_price', restockData.cost);
+    formData.append('created_by', userid)
 
     if (restockData.file) {
       formData.append('attachment', restockData.file);
@@ -155,7 +160,7 @@ export default function InventoryPage() {
       fetchLogs();
 
       setIsRestockOpen(false);
-      setRestockData({ qty: "", cost: "", file: null });
+      setRestockData({ qty: "", cost: "", file: null, created_by: "" });
     } catch (error) {
       alert(error.response?.data?.message || "Failed to restock product. Please try again.");
     }
@@ -212,21 +217,15 @@ export default function InventoryPage() {
           <tbody className="divide-y divide-slate-100">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((item) => {
-                const lastReceipt = (logs || []).find(l =>
-                  Number(l.product_id) === Number(item.id) &&
-                  l.attachment
-                );
-
-
                 return (
                   <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-slate-800">{item.name} ({item.inventory_types?.name || 'N/A'})</span>
-                        {lastReceipt?.attachment ? (
+                        {item.attachment ? (
                           /* IF ATTACHMENT EXISTS */
                           <button
-                            onClick={() => window.open(`${API_BASE_URL}/uploads/${lastReceipt.attachment}`, '_blank')}
+                            onClick={() => window.open(`${API_BASE_URL}/uploads/${item.attachment}`, '_blank')}
                             className="flex items-center gap-1 text-[10px] text-blue-500 font-bold hover:text-blue-700 mt-1 transition-colors"
                           >
                             <FileText size={12} /> View Attachment
