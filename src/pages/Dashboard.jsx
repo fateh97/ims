@@ -27,7 +27,7 @@ export default function Dashboard() {
   }, [fetchInventory]);
 
   // 1. Identify Low Stock Items
-  const lowStockItems = inventory.filter(item => item.stock <= 10);
+  const lowStockItems = inventory.filter(item => item.stock <= 2);
 
   const totalRevenue = logs
     .filter(log => log.type === 'OUT')
