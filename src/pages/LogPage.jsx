@@ -1,22 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Printer, FileText, X, ShoppingCart } from 'lucide-react';
-import logoImg from '../assets/wbm-logo.jpeg'; // Import your logo
+import { Printer, FileText, X, Loader2 } from 'lucide-react'; 
+import logoImg from '../assets/wbm-logo.jpeg';
 
 export default function ActivityLog() {
-  const { logs } = useStore();
-  const [printData, setPrintData] = useState(null); // State for the selected receipt
+  // Pull isLoading from your Zustand store
+  const { logs, isLoading, fetchLogs } = useStore(); 
+  const [printData, setPrintData] = useState(null);
 
   const API_BASE_URL = "http://127.0.0.1:8000";
+
+  useEffect(() => {
+    if (fetchLogs) fetchLogs();
+  }, []);
 
   const handlePreparePrint = (log) => {
     // Format the data to match our receipt structure
     setPrintData({
       ref: log.ref,
-      productName: log.product?.name || log.service_name,
+      productName: log.product_name || log.service_name,
       qty: log.qty,
-      price: log.product?.price || log.service_price || 0,
-      total: log.qty * (log.product?.price || log.service_price || 0),
+      price: log.price || log.service_price || 0,
+      total: log.qty * (log.price || log.service_price || 0),
       date: new Date(log.created_at).toLocaleString([], {
         year: 'numeric', month: 'numeric', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
@@ -24,82 +29,82 @@ export default function ActivityLog() {
     });
   };
 
+  // 1. YOUR LOADER LOGIC
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="animate-spin text-slate-900" size={32} />
+          <span className="font-medium animate-pulse">Fetching activity logs...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. DATA VIEW (Once loading is finished)
   return (
-    <div className="space-y-6">
-      {/* 1. THE TABLE SECTION (Hidden when printing the receipt) */}
+    <div className="space-y-6 animate-in fade-in duration-500">
       <div className="print:hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b">
             <tr>
-              <th className="px-6 py-4">Summary</th>
-              <th className="px-6 py-4">Product / Services</th>
-              <th className="px-6 py-4">Type</th>
-              <th className="px-6 py-4 text-center">Staff</th>
-              <th className="px-6 py-4 text-center">Attachment</th>
+              <th className="px-6 py-4 text-slate-500 font-semibold text-sm">Summary</th>
+              <th className="px-6 py-4 text-slate-500 font-semibold text-sm">Product / Services</th>
+              <th className="px-6 py-4 text-slate-500 font-semibold text-sm">Type</th>
+              <th className="px-6 py-4 text-center text-slate-500 font-semibold text-sm">Staff</th>
+              <th className="px-6 py-4 text-center text-slate-500 font-semibold text-sm">Attachment</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {logs && logs.length > 0 ? (logs.map((log) => (
-              <tr key={log.id}>
-                <td className="px-6 py-4 font-medium">{log.ref}</td>
-                <td className="px-6 py-4 font-medium">
-                  {log.product_name ? (
-                    <>
-                      {log.product_name}
-                      {/* If it's a product, check if it's an accessory */}
-                      {Number(log.accessory) === 1 && (
-                        <span className="ml-1 text-slate-400 font-normal text-md">(Accessory)</span>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {/* If there is no product, it's a manual service entry */}
-                      {log.service_name}
-                      <span className="ml-1 text-slate-400 font-normal text-md">(Service)</span>
-                    </>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+            {logs && logs.length > 0 ? (
+              logs.map((log) => (
+                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-slate-700">{log.ref}</td>
+                  <td className="px-6 py-4 font-medium">
+                    {log.product_name || log.service_name}
+                    <span className="ml-1 text-slate-400 font-normal text-xs italic">
+                      ({log.product_name ? 'Product' : 'Service'})
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
+                      log.type === 'IN' ? 'text-emerald-600 bg-emerald-50' : 
+                      log.type === 'DELETE' ? 'text-rose-600 bg-rose-50' : 'text-blue-600 bg-blue-50'
                     }`}>
-                    {log.type}
-                  </span>
-                </td>
-                <td>
-                  <div className="flex items-center gap-2 justify-center">
-                    <div className="h-5 w-20 rounded-full bg-slate-900 flex items-center justify-center text-white text-[10px] font-bold">
-                      {log.users?.name ? log.users.name.toUpperCase() : '?'}
+                      {log.type}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="h-6 w-24 rounded-full bg-slate-900 flex items-center justify-center text-white text-[10px] font-bold">
+                        {log.users?.name ? log.users.name.toUpperCase() : '?'}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center space-x-2">
-                  {/* SHOW PRINT BUTTON ONLY FOR 'OUT' (SALES) */}
-                  {log.type === 'OUT' && (
-                    <button
-                      onClick={() => handlePreparePrint(log)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                      title="Reprint Receipt"
-                    >
-                      <Printer size={18} />
-                    </button>
-                  )}
-
-                  {/* Existing attachment viewer for 'IN' logs */}
-                  {log.attachment && (
-                    <button onClick={() => window.open(`${API_BASE_URL}/uploads/${log.attachment}`, '_blank')}
-                      className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg">
-                      <FileText size={18} />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))
+                  </td>
+                  <td className="px-6 py-4 text-center space-x-2">
+                    {log.type === 'OUT' && (
+                      <button
+                        onClick={() => handlePreparePrint(log)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      >
+                        <Printer size={18} />
+                      </button>
+                    )}
+                    {log.attachment && (
+                      <button onClick={() => window.open(`${API_BASE_URL}/uploads/${log.attachment}`, '_blank')}
+                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg">
+                        <FileText size={18} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
                 <td colSpan="5" className="px-6 py-20 text-center">
                   <div className="flex flex-col items-center gap-2 opacity-40">
-                    <FileText size={48} className="text-slate-300" />
-                    <p className="text-slate-500 font-medium">No activity logs found yet.</p>
+                    <FileText size={48} />
+                    <p>No activity logs found yet.</p>
                   </div>
                 </td>
               </tr>
