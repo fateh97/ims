@@ -14,21 +14,24 @@ export default function ReportsPage() {
     };
     loadData();
   }, [fetchLogs]);
-
-  console.log("Logs for Reporting Page:", logs);
+  
   // Calculate Financials
   const moneyIn = logs
     .filter(l => l.type === 'IN' || l.type === 'DELETE')
     .reduce((sum, l) => {
-      const logValue = Number(l.qty || 0) * (Number(l.supplier_price) || 0);
+        const qty = Number(l.qty || 0);
+        const price = Number(l.supplier_price || 0);
+        const logValue = qty * price;
 
-      if (l.type === 'IN') {
-        return sum + logValue;
-      } else if (l.type === 'DELETE') {
-        return sum - logValue;
-      }
+        // Debugging: Check your console to see if DELETE logs have values
+        if (l.type === 'DELETE') {
+            console.log(`Deleting: ${l.product_name}, Qty: ${qty}, Price: ${price}, Total to minus: ${logValue}`);
+        }
 
-      return sum;
+        if (l.type === 'IN') return sum + logValue;
+        if (l.type === 'DELETE') return sum - logValue;
+
+        return sum;
     }, 0);
 
   const moneyOut = logs
